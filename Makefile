@@ -1,4 +1,4 @@
-OBJS = main.cpp
+OBJS = handleError.cpp main.cpp
 
 CC = g++
 
