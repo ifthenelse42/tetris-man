@@ -3,10 +3,19 @@
 #include "SDL2/SDL_ttf.h"
 #include "errorManager.h"
 
-SDL_Texture* mkTexture(SDL_Renderer* renderer, SDL_Surface* imgBuffer)
+SDL_Texture* mkTextureFromImage(SDL_Renderer* renderer, SDL_Surface* imgBuffer)
 {
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, imgBuffer);
   SDL_FreeSurface(imgBuffer);
+
+  textureLoadError(texture);
+
+  return texture;
+}
+
+SDL_Texture* mkTexture(SDL_Renderer* renderer, int width, int height)
+{
+  SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
 
   textureLoadError(texture);
 
@@ -18,13 +27,23 @@ SDL_Texture* mkText(SDL_Renderer* renderer, SDL_Color color, TTF_Font* font, con
   SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-  //SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
-
   // La surface ne sert plus à rien une fois créée
   SDL_FreeSurface(surface);
 
   // Par contre la texture sert toujours, donc on renvoie son pointeur
   return texture;
+}
+
+SDL_Texture* mkTetromino(SDL_Renderer* renderer, int width, int height)
+{
+  SDL_Texture* bloc = mkTexture(renderer, width, height);
+  textureLoadError(bloc);
+  SDL_SetRenderTarget(renderer, bloc);
+  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
+  SDL_RenderClear(renderer);
+  SDL_SetRenderTarget(renderer, NULL);
+
+  return bloc;
 }
 
 void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, int x, int y, int width, int height)
@@ -47,5 +66,4 @@ void drawLine(SDL_Renderer* renderer, int r, int g, int b, int a, int x1, int y1
 {
   SDL_SetRenderDrawColor(renderer, r, g, b, a);
   SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
-  SDL_RenderPresent(renderer);
 }

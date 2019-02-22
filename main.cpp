@@ -6,10 +6,12 @@
 #include "renderer.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <threads.h>
 
 /*
  * TODO
+ * TODO: Mettre les tetrominos dans un tableau
+ * TODO: Pointer vers ces différents tetrominos
+ * TODO: Faire les divers tetrominos et les essayer
  */
 
 int main(int argc, char* argv[]) // Ces arguments sont là pour la compatibilité avec les autres OS

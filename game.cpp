@@ -1,8 +1,9 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_ttf.h"
-#include "renderer.h"
 #include "errorManager.h"
+#include "renderer.h"
+#include "tetromino.h"
 #include "textureManager.h"
 
 void initSDL()
@@ -16,19 +17,24 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
   int issouX = 0;
   int issouY = 0;
 
-  // On génère une image
-  SDL_Texture* image = mkTexture(renderer, IMG_Load("test.png"));
-
   // On génère un texte
-  const char* texte1Contenu = "issou";
+  const char* texte1Contenu = "test";
   SDL_Texture* texte1 = mkText(renderer, { 0, 0, 0 }, font, texte1Contenu);
+
+  // On génère un premier tetromino
+  SDL_Texture* bloc = bloc1(renderer, 50, 50);
 
   SDL_Event e;
 
+  int blocX = 0;
+  int blocY = 0;
   while (run) {
+    if (blocY < 750)
+      blocY += 2;
     clearRender(renderer);
     displayText(renderer, texte1, 50, 50);
-    displayTexture(renderer, image, issouX, issouY, 50, 50);
+    //displayTexture(renderer, image, issouX, issouY, 50, 50);
+    displayTexture(renderer, bloc, blocX, blocY, 50, 50);
     SDL_RenderPresent(renderer);
 
     while (SDL_PollEvent(&e) != 0) {

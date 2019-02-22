@@ -2,7 +2,10 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
 
-SDL_Texture* mkTexture(SDL_Renderer* renderer, SDL_Surface* imgBuffer);
+SDL_Texture* mkTextureFromImage(SDL_Renderer* renderer, SDL_Surface* imgBuffer);
+
+SDL_Texture* mkTexture(SDL_Renderer* renderer);
+SDL_Texture* mkTetromino(SDL_Renderer* renderer, int x, int y);
 
 SDL_Texture* mkText(SDL_Renderer* renderer, SDL_Color color, TTF_Font* font, const char* text);
 

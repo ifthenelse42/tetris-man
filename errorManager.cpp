@@ -45,6 +45,16 @@ int textureLoadError(SDL_Texture* texture)
   return 0;
 }
 
+int surfaceGenerationError(SDL_Surface* surface)
+{
+  if (!surface) {
+    printf("Error while generating surface. Error : %s", SDL_GetError());
+    return EXIT_FAILURE;
+  }
+
+  return 0;
+}
+
 int fontLoadError(TTF_Font* font)
 {
   if (!font) {
