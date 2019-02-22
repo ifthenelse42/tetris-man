@@ -1,4 +1,4 @@
-OBJS = handleError.cpp main.cpp
+OBJS = game.cpp renderer.cpp inputManager.cpp textureManager.cpp errorManager.cpp main.cpp
 
 CC = g++
 
