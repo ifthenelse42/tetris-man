@@ -1,6 +1,7 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_ttf.h"
+#include "SDL2/SDL_mixer.h"
 #include "errorManager.h"
 #include "game.h"
 #include "renderer.h"
@@ -9,12 +10,12 @@
 
 /*
  * TODO
- * TODO: Mettre les tetrominos dans un tableau
- * TODO: Pointer vers ces différents tetrominos
+ * TODO: Fonction pour assembler plusieurs blocs en un seul tetrominos
+ * TODO: Collision initiale des tetrominos
  * TODO: Faire les divers tetrominos et les essayer
  */
 
-int main(int argc, char* argv[]) // Ces arguments sont là pour la compatibilité avec les autres OS
+int main(int argc, char **argv) // Ces arguments sont là pour la compatibilité avec les autres OS
 {
   initSDL();
 

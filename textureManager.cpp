@@ -38,10 +38,6 @@ SDL_Texture* mkTetromino(SDL_Renderer* renderer, int width, int height)
 {
   SDL_Texture* bloc = mkTexture(renderer, width, height);
   textureLoadError(bloc);
-  SDL_SetRenderTarget(renderer, bloc);
-  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
-  SDL_RenderClear(renderer);
-  SDL_SetRenderTarget(renderer, NULL);
 
   return bloc;
 }

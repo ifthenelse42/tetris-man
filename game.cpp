@@ -5,6 +5,7 @@
 #include "renderer.h"
 #include "tetromino.h"
 #include "textureManager.h"
+#include <iostream>
 
 void initSDL()
 {
@@ -14,29 +15,33 @@ void initSDL()
 void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
 {
   bool run = true;
-  int issouX = 0;
-  int issouY = 0;
 
   // On génère un texte
   const char* texte1Contenu = "test";
   SDL_Texture* texte1 = mkText(renderer, { 0, 0, 0 }, font, texte1Contenu);
 
-  // On génère un premier tetromino
-  SDL_Texture* bloc = bloc1(renderer, 50, 50);
-
   SDL_Event e;
+  blocs tetrominos[MAX_TETROMINOS];
+  blocs* allTetrominos = tetrominos;
 
-  int blocX = 0;
-  int blocY = 0;
+  // Créé un premier tetromino
+  tetromino1(renderer, allTetrominos);
+
   while (run) {
-    if (blocY < 750)
-      blocY += 2;
+    int last = lastTetrominosIndex(tetrominos);
+    int lastBloc = lastBlocIndex(tetrominos, last - 1);
     clearRender(renderer);
-    displayText(renderer, texte1, 50, 50);
-    //displayTexture(renderer, image, issouX, issouY, 50, 50);
-    displayTexture(renderer, bloc, blocX, blocY, 50, 50);
-    SDL_RenderPresent(renderer);
+    // On parcours le tableau contenant les tetrominos
+    //for (long unsigned int i = 0; i < sizeof(tetrominos) / sizeof(tetrominos[0]); i++) {
+    //}
+    for (int i = 0; i < last; i++) {
+      std::cout << lastBlocIndex(tetrominos, last - 1) << std::endl;
+      for (int j = 0; j < lastBloc; j++) {
+        displayTexture(renderer, tetrominos[i].bloc[j], tetrominos[i].position[j].x, tetrominos[i].position[j].y, tetrominos[i].position[j].w, tetrominos[i].position[j].h);
+      }
+    }
 
+    displayText(renderer, texte1, 50, 50);
     while (SDL_PollEvent(&e) != 0) {
       // Si l'utilisateur demande à fermer la fenêtre du jeu
       if (e.type == SDL_QUIT) {
@@ -44,23 +49,17 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
       }
       // Si l'utilisateur appuis sur une touche
       else if (e.type == SDL_KEYDOWN) {
-        printf("y: %d\n", issouY);
         switch (e.key.keysym.sym) {
-        case SDLK_UP:
-          issouY -= 50;
-          break;
         case SDLK_DOWN:
-          issouY += 50;
           break;
         case SDLK_LEFT:
-          issouX -= 50;
           break;
         case SDLK_RIGHT:
-          issouX += 50;
           break;
         }
       }
     }
+    SDL_RenderPresent(renderer);
   }
 }
 
