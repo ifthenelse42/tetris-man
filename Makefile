@@ -1,4 +1,4 @@
-OBJS = game.cpp renderer.cpp eventManager.cpp tetromino.cpp textureManager.cpp errorManager.cpp main.cpp
+OBJS = game.cpp renderer.cpp collision.cpp eventManager.cpp tetromino.cpp textureManager.cpp errorManager.cpp main.cpp
 
 CC = g++
 

@@ -3,10 +3,7 @@
 #include "textureManager.h"
 #include <iostream>
 
-const int BLOC_WIDTH = 50;
-const int BLOC_HEIGHT = 50;
 
-// TODO: Assembler plusieurs blocs dans un tableau
 SDL_Texture* mkBloc(SDL_Renderer* renderer)
 {
   SDL_Texture* bloc = mkTetromino(renderer, BLOC_WIDTH, BLOC_HEIGHT);
@@ -18,6 +15,11 @@ SDL_Texture* mkBloc(SDL_Renderer* renderer)
   SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
   SDL_RenderClear(renderer);
 
+  // On ajoute des lignes pour faire jolie
+  drawLine(renderer, 0, 0, 0, 255, 0, 0, BLOC_WIDTH, 0);
+  drawLine(renderer, 0, 0, 0, 255, 0, BLOC_HEIGHT - 1, BLOC_WIDTH, BLOC_HEIGHT - 1);
+  drawLine(renderer, 0, 0, 0, 255, 0, 0, 0, BLOC_HEIGHT - 1);
+  drawLine(renderer, 0, 0, 0, 255, BLOC_WIDTH - 1, 0, BLOC_WIDTH - 1, BLOC_HEIGHT - 1);
   // Enfin, on rend le rendu au renderer initial
   SDL_SetRenderTarget(renderer, NULL);
   return bloc;
@@ -52,7 +54,7 @@ int lastBlocIndex(blocs* tetrominos, int tetrominosIndex)
 }
 
 // Premier type de tetromino - on assemble plusieurs blocs
-void tetromino1(SDL_Renderer* renderer, blocs* tetrominos)
+void tetromino1(SDL_Renderer* renderer, blocs* tetrominos, SDL_Rect position)
 {
   // On forme un bloc
   SDL_Texture* bloc = mkBloc(renderer);
@@ -62,9 +64,9 @@ void tetromino1(SDL_Renderer* renderer, blocs* tetrominos)
 
   // On l'ajoute dans le tableau tetrominos en mémoire
   tetrominos[last].bloc[0] = bloc;
-  tetrominos[last].position[0] = { 100, 50, BLOC_WIDTH, BLOC_HEIGHT };
+  tetrominos[last].position[0] = position;
   tetrominos[last].bloc[1] = bloc;
-  tetrominos[last].position[1] = { tetrominos[last].position[0].x, tetrominos[last].position[0].y + 50, BLOC_WIDTH, BLOC_HEIGHT };
+  tetrominos[last].position[1] = { tetrominos[last].position[0].x, tetrominos[last].position[0].y + BLOC_HEIGHT, BLOC_WIDTH, BLOC_HEIGHT };
   tetrominos[last].bloc[2] = bloc;
-  tetrominos[last].position[2] = { tetrominos[last].position[0].x + 50, tetrominos[last].position[1].y, BLOC_WIDTH, BLOC_HEIGHT };
+  tetrominos[last].position[2] = { tetrominos[last].position[0].x + BLOC_WIDTH, tetrominos[last].position[1].y, BLOC_WIDTH, BLOC_HEIGHT };
 }
