@@ -3,7 +3,6 @@
 #include "textureManager.h"
 #include <iostream>
 
-
 SDL_Texture* mkBloc(SDL_Renderer* renderer)
 {
   SDL_Texture* bloc = mkTetromino(renderer, BLOC_WIDTH, BLOC_HEIGHT);
@@ -53,9 +52,21 @@ int lastBlocIndex(blocs* tetrominos, int tetrominosIndex)
   return last;
 }
 
+// On fait tomber tous les tetrominos qui sont en état de mouvement
+void fall(blocs* tetrominos)
+{
+  for (int i = 0; i < MAX_TETROMINOS; i++) {
+    for (int j = 0; j < MAX_TETROMINOS_BLOC; j++) {
+      if (tetrominos[i].move)
+        tetrominos[i].position[j].y += 2;
+    }
+  }
+}
+
 // Premier type de tetromino - on assemble plusieurs blocs
 void tetromino1(SDL_Renderer* renderer, blocs* tetrominos, SDL_Rect position)
 {
+  std::cout << "test" << std::endl;
   // On forme un bloc
   SDL_Texture* bloc = mkBloc(renderer);
 
@@ -69,4 +80,22 @@ void tetromino1(SDL_Renderer* renderer, blocs* tetrominos, SDL_Rect position)
   tetrominos[last].position[1] = { tetrominos[last].position[0].x, tetrominos[last].position[0].y + BLOC_HEIGHT, BLOC_WIDTH, BLOC_HEIGHT };
   tetrominos[last].bloc[2] = bloc;
   tetrominos[last].position[2] = { tetrominos[last].position[0].x + BLOC_WIDTH, tetrominos[last].position[1].y, BLOC_WIDTH, BLOC_HEIGHT };
+}
+
+void tetromino2(SDL_Renderer* renderer, blocs* tetrominos, SDL_Rect position)
+{
+  std::cout << "test" << std::endl;
+  // On forme un bloc
+  SDL_Texture* bloc = mkBloc(renderer);
+
+  // On obtiens le dernier index des tetrominos
+  int last = lastTetrominosIndex(tetrominos);
+
+  // On l'ajoute dans le tableau tetrominos en mémoire
+  tetrominos[last].bloc[0] = bloc;
+  tetrominos[last].position[0] = position;
+  tetrominos[last].bloc[1] = bloc;
+  tetrominos[last].position[1] = { tetrominos[last].position[0].x, tetrominos[last].position[0].y + BLOC_HEIGHT, BLOC_WIDTH, BLOC_HEIGHT };
+  tetrominos[last].bloc[2] = bloc;
+  tetrominos[last].position[2] = { tetrominos[last].position[0].x, tetrominos[last].position[1].y + BLOC_HEIGHT, BLOC_WIDTH, BLOC_HEIGHT };
 }
