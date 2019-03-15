@@ -1,8 +1,6 @@
 #include "SDL2/SDL.h"
 #include "errorManager.h"
-
-const int SCREEN_WIDTH = 1024;
-const int SCREEN_HEIGHT = 768;
+#include "renderer.h"
 
 SDL_Window* mkWindow()
 {

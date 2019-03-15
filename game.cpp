@@ -7,6 +7,7 @@
 #include "tetromino.h"
 #include "textureManager.h"
 #include <iostream>
+#include <vector>
 
 void initSDL()
 {
@@ -18,42 +19,47 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
   bool run = true;
 
   // On génère un texte
-  const char* texte1Contenu = "test";
-  SDL_Texture* texte1 = mkText(renderer, { 0, 0, 0 }, font, texte1Contenu);
+  const char* activeText = "1";
+  const char* inactiveText = "0";
+  SDL_Texture* active = mkText(renderer, { 0, 0, 0 }, font, activeText);
+  SDL_Texture* inactive = mkText(renderer, { 0, 0, 0 }, font, inactiveText);
 
   SDL_Event e;
   blocs tetrominos[MAX_TETROMINOS];
   blocs* allTetrominos = tetrominos;
 
   // Créé un premier tetromino
-  tetromino2(renderer, allTetrominos, { 50, 50, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino2(renderer, allTetrominos, { 100, -200, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino2(renderer, allTetrominos, { 100, -600, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino2(renderer, allTetrominos, { 150, -100, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino2(renderer, allTetrominos, { 150, -500, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino2(renderer, allTetrominos, { 200, -100, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino1(renderer, allTetrominos, { 200, -800, BLOC_WIDTH, BLOC_HEIGHT });
+  //tetromino1(renderer, allTetrominos, { 200, -10, BLOC_WIDTH, BLOC_HEIGHT }, 1);
+  // ---- nouvelle méthode ----
+  blocs2 allBlocs[MAX_TETROMINOS];
+  allBlocs[0].startX = 300;
+  allBlocs[0].startY = 50;
+  allBlocs[0].coordinate[0][0] = 1;
+  allBlocs[0].coordinate[0][1] = 1;
+  allBlocs[0].coordinate[0][2] = 1;
+  allBlocs[0].coordinate[1][0] = 1;
+  allBlocs[0].coordinate[1][1] = 1;
+  allBlocs[0].coordinate[2][0] = 1;
 
-  tetromino1(renderer, allTetrominos, { 50, -1500, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino1(renderer, allTetrominos, { 200, -1500, BLOC_WIDTH, BLOC_HEIGHT });
-  tetromino1(renderer, allTetrominos, { 400, -1500, BLOC_WIDTH, BLOC_HEIGHT });
-
+  SDL_Texture* bloc = mkBloc(renderer);
   while (run) {
+    // ---- nouvelle méthode ----
+
+    SDL_Delay(40);
+    allBlocs[0] = transpose(allBlocs[0], 1);
     int last = lastTetrominosIndex(tetrominos);
     int lastBloc = lastBlocIndex(tetrominos, last - 1);
     clearRender(renderer);
-    // On parcours le tableau contenant les tetrominos
-    //for (long unsigned int i = 0; i < sizeof(tetrominos) / sizeof(tetrominos[0]); i++) {
-    //}
+    affiche(renderer, bloc, allBlocs, active, inactive);
+    //fall(allBlocs);
+    /**
     for (int i = 0; i < last; i++) {
       for (int j = 0; j < lastBloc; j++) {
         collide(renderer, tetrominos, i);
         displayTexture(renderer, tetrominos[i].bloc[j], tetrominos[i].position[j].x, tetrominos[i].position[j].y, tetrominos[i].position[j].w, tetrominos[i].position[j].h);
       }
     }
-
-    displayText(renderer, texte1, 50, 50);
-    fall(tetrominos);
+    */
     while (SDL_PollEvent(&e) != 0) {
       // Si l'utilisateur demande à fermer la fenêtre du jeu
       if (e.type == SDL_QUIT) {
@@ -73,6 +79,7 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
         }
       }
     }
+
     SDL_RenderPresent(renderer);
   }
 }

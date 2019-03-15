@@ -42,6 +42,12 @@ SDL_Texture* mkTetromino(SDL_Renderer* renderer, int width, int height)
   return bloc;
 }
 
+void mkLine(SDL_Renderer* renderer, int r, int g, int b, int a, int x1, int y1, int x2, int y2)
+{
+  SDL_SetRenderDrawColor(renderer, r, g, b, a);
+  SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+}
+
 void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, int x, int y, int width, int height)
 {
   SDL_Rect position = { x, y, width, height };
@@ -58,8 +64,3 @@ void displayText(SDL_Renderer* renderer, SDL_Texture* texture, int x, int y)
   SDL_RenderCopy(renderer, texture, NULL, &position);
 }
 
-void drawLine(SDL_Renderer* renderer, int r, int g, int b, int a, int x1, int y1, int x2, int y2)
-{
-  SDL_SetRenderDrawColor(renderer, r, g, b, a);
-  SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
-}

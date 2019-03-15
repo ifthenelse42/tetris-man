@@ -9,8 +9,9 @@ SDL_Texture* mkTetromino(SDL_Renderer* renderer, int x, int y);
 
 SDL_Texture* mkText(SDL_Renderer* renderer, SDL_Color color, TTF_Font* font, const char* text);
 
+void mkLine(SDL_Renderer* renderer, int r, int g, int b, int a, int x1, int y1, int x2, int y2);
+
 void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, int x, int y, int width, int height);
 
 void displayText(SDL_Renderer* renderer, SDL_Texture* texture, int x, int y);
 
-void drawLine(SDL_Renderer* renderer, int r, int g, int b, int a, int x1, int y1, int x2, int y2);
