@@ -32,23 +32,17 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
   //tetromino1(renderer, allTetrominos, { 200, -10, BLOC_WIDTH, BLOC_HEIGHT }, 1);
   // ---- nouvelle méthode ----
   blocs2 allBlocs[MAX_TETROMINOS];
-  allBlocs[0].startX = 300;
-  allBlocs[0].startY = 50;
-  allBlocs[0].coordinate[0][0] = 1;
-  allBlocs[0].coordinate[0][1] = 1;
-  allBlocs[0].coordinate[0][2] = 1;
-  allBlocs[0].coordinate[1][0] = 1;
-  allBlocs[0].coordinate[1][1] = 1;
-  allBlocs[0].coordinate[2][0] = 1;
+
+  // On rajoute un tetromino de type 1
+  addTetromino(allBlocs, 50, 100, 1, 0);
+  addTetromino(allBlocs, 200, 100, 2, 0);
+  addTetromino(allBlocs, 400, 100, 3, 0);
+  addTetromino(allBlocs, 50, 300, 4, 0);
+  addTetromino(allBlocs, 200, 300, 5, 0);
+  addTetromino(allBlocs, 400, 300, 6, 0);
 
   SDL_Texture* bloc = mkBloc(renderer);
   while (run) {
-    // ---- nouvelle méthode ----
-
-    SDL_Delay(40);
-    allBlocs[0] = transpose(allBlocs[0], 1);
-    int last = lastTetrominosIndex(tetrominos);
-    int lastBloc = lastBlocIndex(tetrominos, last - 1);
     clearRender(renderer);
     affiche(renderer, bloc, allBlocs, active, inactive);
     //fall(allBlocs);

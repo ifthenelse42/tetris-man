@@ -27,12 +27,13 @@ SDL_Texture* mkBloc(SDL_Renderer* renderer)
   return bloc;
 }
 
-int lastTetrominosIndex(blocs* tetrominos)
+int lastTetrominosIndex(blocs2* tetrominos)
 {
   int last = 0;
 
   for (int i = 0; i < MAX_TETROMINOS; i++) {
-    if (tetrominos[i].bloc[0] == NULL) {
+    // Si le type est défini à 0, ca veut dire que ca ne correspond à aucun tetromino
+    if (tetrominos[i].type == 0) {
       last = i;
       break;
     }
@@ -59,77 +60,183 @@ int lastBlocIndex(blocs* tetrominos, int tetrominosIndex)
 void fall(blocs2* blocs)
 {
   for (int k = 0; k < 2; k++) {
-    blocs[k].coordinate[1][0] += 1;
-    blocs[k].coordinate[1][1] += 1;
+    blocs[k].startY += 1;
   }
 }
 
-// Premier type de tetromino - on assemble plusieurs blocs
-void tetromino1(SDL_Renderer* renderer, blocs* tetrominos, SDL_Rect position, int rotation)
+// Tetromino - type L
+void addTetromino(blocs2* tetrominos, int startX, int startY, int type, int rotation)
 {
-  std::cout << "test" << std::endl;
-  // On forme un bloc
-  SDL_Texture* bloc = mkBloc(renderer);
-
   // On obtiens le dernier index des tetrominos
   int last = lastTetrominosIndex(tetrominos);
 
   // On l'ajoute dans le tableau tetrominos en mémoire
-  tetrominos[last].bloc[0] = bloc;
-  tetrominos[last].position[0] = position;
-  tetrominos[last].bloc[1] = bloc;
-  tetrominos[last].position[1] = { tetrominos[last].position[0].x, tetrominos[last].position[0].y + BLOC_HEIGHT, BLOC_WIDTH, BLOC_HEIGHT };
-  tetrominos[last].bloc[2] = bloc;
-  tetrominos[last].position[2] = { tetrominos[last].position[0].x + BLOC_WIDTH, tetrominos[last].position[1].y, BLOC_WIDTH, BLOC_HEIGHT };
+  tetrominos[last].startX = startX;
+  tetrominos[last].startY = startY;
+  tetrominos[last].type = type;
 
-  // On applique une rotation à chaque bloc
-  for (int i = 0; i < lastBlocIndex(tetrominos, last); i++) {
-    int x = tetrominos[last].position[i].x;
-    int y = tetrominos[last].position[i].y;
-    std::cout << x << std::endl;
+  // La matrice bi-dimentionnelle représentant le tetromino dépend de son type
+  switch (type) {
+    // tetromino L
+  case 1:
+    tetrominos[last].coordinate[0][0] = 1;
+    tetrominos[last].coordinate[0][1] = 1;
+    tetrominos[last].coordinate[0][2] = 1;
+    tetrominos[last].coordinate[1][2] = 1;
+    break;
+    // tetromino I
+  case 2:
+    tetrominos[last].coordinate[0][0] = 1;
+    tetrominos[last].coordinate[0][1] = 1;
+    tetrominos[last].coordinate[0][2] = 1;
+    tetrominos[last].coordinate[0][3] = 1;
+    break;
+    // tetromino O
+  case 3:
+    tetrominos[last].coordinate[0][0] = 1;
+    tetrominos[last].coordinate[0][1] = 1;
+    tetrominos[last].coordinate[1][0] = 1;
+    tetrominos[last].coordinate[1][1] = 1;
+    break;
+  // tetromino s
+  case 4:
+    tetrominos[last].coordinate[0][1] = 1;
+    tetrominos[last].coordinate[1][0] = 1;
+    tetrominos[last].coordinate[1][1] = 1;
+    tetrominos[last].coordinate[2][0] = 1;
+    break;
+  // tetromino z
+  case 5:
+    tetrominos[last].coordinate[0][0] = 1;
+    tetrominos[last].coordinate[1][0] = 1;
+    tetrominos[last].coordinate[1][1] = 1;
+    tetrominos[last].coordinate[2][1] = 1;
+    break;
+  // tetromino T
+  case 6:
+    tetrominos[last].coordinate[0][0] = 1;
+    tetrominos[last].coordinate[1][0] = 1;
+    tetrominos[last].coordinate[1][1] = 1;
+    tetrominos[last].coordinate[2][0] = 1;
+    break;
+  }
 
-    /*
-    // TODO rotation ici - formule de Mme Baert
-    tetrominos[last].position[i].x = x + x * cos(M_PI / 2) - y * sin(M_PI / 2);
-    tetrominos[last].position[i].y = y + x * sin(M_PI / 2) + y * cos(M_PI / 2);
-    */
+  // On applique la transposition (sera faite si nécessaire seulement)
+  transpose(&tetrominos[last], rotation);
+}
+
+// Cette fonction sert à retourner une condition sur le nombre de rotation selon le type du tetromino
+bool rotationAmount(int type, int rotation)
+{
+  switch (type) {
+  case 1:
+    return (rotation < 4 && rotation > 0);
+    break;
+  case 2:
+    return (rotation < 2 && rotation > 0);
+  case 3:
+    return 0;
+  case 4:
+    return (rotation < 2 && rotation > 0);
+  case 5:
+    return (rotation < 2 && rotation > 0);
+  case 6:
+    return (rotation < 4 && rotation > 0);
+  }
+
+  return 0;
+}
+
+// Cette fonction va décaler la position initiale du tetromino selon son type et la rotation choisie
+void tetrominoShift(blocs2* bloc, int rotation)
+{
+  switch (bloc->type) {
+  // Tetromino L
+  case 1:
+    if (rotation == 1) {
+      bloc->startX -= BLOC_WIDTH * 2;
+      bloc->startY += BLOC_HEIGHT;
+    } else if (rotation == 2) {
+      bloc->startX -= BLOC_WIDTH * 3;
+      bloc->startY -= BLOC_HEIGHT;
+    } else if (rotation == 3) {
+      bloc->startX -= BLOC_WIDTH;
+      bloc->startY -= BLOC_HEIGHT * 2;
+    }
+    break;
+  // Tetromino I
+  case 2:
+    if (rotation == 1) {
+      bloc->startX -= 25;
+      bloc->startY += 25;
+    }
+
+    break;
+  case 3:
+    // Aucune rotation pour lui
+    break;
+  case 4:
+    if (rotation == 1) {
+      bloc->startX -= BLOC_WIDTH * 2;
+      bloc->startY -= BLOC_WIDTH;
+    } else if (rotation == 2) {
+      bloc->startX -= BLOC_WIDTH;
+      bloc->startY -= BLOC_WIDTH * 2;
+    }
+    break;
+  case 5:
+    if (rotation == 1) {
+      bloc->startX -= BLOC_WIDTH;
+      bloc->startY -= BLOC_WIDTH;
+    } else if (rotation == 2) {
+      bloc->startX -= BLOC_WIDTH;
+      bloc->startY -= BLOC_WIDTH * 2;
+    }
+    break;
+  case 6:
+    if (rotation == 1) {
+      bloc->startX -= BLOC_WIDTH * 2;
+      bloc->startY -= BLOC_WIDTH;
+    } else if (rotation == 2) {
+      bloc->startX -= BLOC_WIDTH;
+      bloc->startY -= BLOC_WIDTH * 3;
+    } else if (rotation == 3) {
+      bloc->startX += BLOC_WIDTH;
+      bloc->startY -= BLOC_WIDTH * 2;
+    }
+
+    break;
   }
 }
 
-void tetromino2(SDL_Renderer* renderer, blocs* tetrominos, SDL_Rect position, int rotation)
+void transpose(blocs2* tetromino, int rotation)
 {
-  // On forme un bloc
-  SDL_Texture* bloc = mkBloc(renderer);
-
-  // On obtiens le dernier index des tetrominos
-  int last = lastTetrominosIndex(tetrominos);
-
-  // On l'ajoute dans le tableau tetrominos en mémoire
-  tetrominos[last].bloc[0] = bloc;
-  tetrominos[last].position[0] = position;
-  tetrominos[last].bloc[1] = bloc;
-  tetrominos[last].position[1] = { tetrominos[last].position[0].x, tetrominos[last].position[0].y + BLOC_HEIGHT, BLOC_WIDTH, BLOC_HEIGHT };
-  tetrominos[last].bloc[2] = bloc;
-  tetrominos[last].position[2] = { tetrominos[last].position[0].x, tetrominos[last].position[1].y + BLOC_HEIGHT, BLOC_WIDTH, BLOC_HEIGHT };
-}
-
-blocs2 transpose(blocs2 tetromino, int rotation)
-{
+  /*
+   * Différents types de tetrominos
+   * 1: L -> 3 rotations
+   * 2: I -> 1 rotation
+   * 3:
+   * 4:
+   * */
   blocs2 transposed;
 
-  // On fait une itération par rotation (si 0, la boucle n'est donc pas exécutée et il n'y a pas rotation)
-  for (int n = 0; n < rotation; n++) {
-    for (int x = 0; x < MAX_TETROMINOS_SIZE; x++) {
-      for (int y = 0; y < MAX_TETROMINOS_SIZE; y++) {
-        // On fait la transposition en faisant un mirroir au niveau des index y
-        transposed.coordinate[y][x] = tetromino.coordinate[x][MAX_TETROMINOS_SIZE - y - 1];
+  // On empêche la rotation si il y a plus de 4 rotation choisie, ce qui ne sert à rien
+  if (rotationAmount(tetromino->type, rotation)) {
+    // On fait une itération par rotation (si 0, la boucle n'est donc pas exécutée et il n'y a pas rotation)
+    for (int n = 0; n < rotation; n++) {
+      for (int x = 0; x < MAX_TETROMINOS_SIZE; x++) {
+        for (int y = 0; y < MAX_TETROMINOS_SIZE; y++) {
+          // On fait la transposition en faisant un mirroir au niveau des index y
+          transposed.coordinate[y][x] = tetromino->coordinate[x][MAX_TETROMINOS_SIZE - y - 1];
+        }
       }
+      // On remplace le contenu de tetromino par la transposition - transposed sera ensuite ré-écris avec les nouvelles positions du tetromino
+      tetromino->coordinate = transposed.coordinate;
     }
-    // On remplace le contenu de tetromino par la transposition - transposed sera ensuite ré-écris avec les nouvelles positions du tetromino
-    tetromino = transposed;
-  }
 
-  return tetromino;
+    // Et enfin on décale le tetromino pour que le déplacement du à la transposition soit transparente
+    tetrominoShift(tetromino, rotation);
+  }
 }
 
 // On cherche si dans la zone d'affichage, il existe des portées de pixels formant un bloc
@@ -137,10 +244,10 @@ blocs2 transpose(blocs2 tetromino, int rotation)
 void affiche(SDL_Renderer* renderer, SDL_Texture* bloc, blocs2* blocs, SDL_Texture* active, SDL_Texture* inactive)
 {
   // Pour chaque tetromino
-  for (int k = 0; k < 1; k++) {
+  for (int k = 0; k < lastTetrominosIndex(blocs); k++) {
     // On fouille ses coordonnées, qui est une matrice 6x6
-    for (int x = 0; x <= SCREEN_WIDTH; x += 50) {
-      for (int y = 0; y <= SCREEN_HEIGHT; y += 50) {
+    for (int x = 0; x <= SCREEN_WIDTH; x++) {
+      for (int y = 0; y <= SCREEN_HEIGHT; y++) {
         // Si les coordonnées actuelle correspondent au début d'un tetromino
         if (x == blocs[k].startX && y == blocs[k].startY) {
           // Alors on circule dedans pour construire le tetromino
