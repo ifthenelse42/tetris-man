@@ -59,9 +59,9 @@ int lastBlocIndex(blocs* tetrominos, int tetrominosIndex)
 // On fait tomber tous les tetrominos qui sont en état de mouvement
 void fall(blocs2* blocs)
 {
-  for (int k = 0; k < lastTetrominosIndex(blocs); k++) {
+  for (int k = 0; k < MAX_TETROMINOS; k++) {
     if (blocs[k].move) {
-      blocs[k].startY += 2;
+      blocs[k].startY += 1;
     }
   }
 }
@@ -247,20 +247,14 @@ void transpose(blocs2* tetromino, int rotation)
 void affiche(SDL_Renderer* renderer, SDL_Texture* bloc, blocs2* blocs, SDL_Texture* active, SDL_Texture* inactive)
 {
   // Pour chaque tetromino
-  for (int k = 0; k < lastTetrominosIndex(blocs); k++) {
+  for (int k = 0; k < 10; k++) {
     // On fouille ses coordonnées, qui est une matrice 6x6
-    for (int x = 0; x <= SCREEN_WIDTH; x++) {
-      for (int y = 0; y <= SCREEN_HEIGHT; y++) {
-        // Si les coordonnées actuelle correspondent au début d'un tetromino
-        if (x == blocs[k].startX && y == blocs[k].startY) {
-          // Alors on circule dedans pour construire le tetromino
-          for (int xVec = 0; xVec < MAX_TETROMINOS_SIZE; xVec++) {
-            for (int yVec = 0; yVec < MAX_TETROMINOS_SIZE; yVec++) {
-              if (blocs[k].coordinate[xVec][yVec] == 1)
-                displayTexture(renderer, bloc, x + (BLOC_WIDTH * xVec), y + (BLOC_HEIGHT * yVec), BLOC_WIDTH, BLOC_HEIGHT);
-            }
-          }
-        }
+    // Si les coordonnées actuelle correspondent au début d'un tetromino
+    // Alors on circule dedans pour construire le tetromino
+    for (int x = 0; x < MAX_TETROMINOS_SIZE; x++) {
+      for (int y = 0; y < MAX_TETROMINOS_SIZE; y++) {
+        if (blocs[k].coordinate[x][y] == 1)
+          displayTexture(renderer, bloc, blocs[k].startX + (BLOC_WIDTH * x), blocs[k].startY + (BLOC_HEIGHT * y), BLOC_WIDTH, BLOC_HEIGHT);
       }
     }
   }

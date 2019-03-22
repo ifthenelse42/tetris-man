@@ -54,8 +54,6 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
   SDL_Texture* bloc = mkBloc(renderer);
   while (run) {
     clearRender(renderer);
-    affiche(renderer, bloc, allBlocs, active, inactive);
-    fall(allBlocs);
     for (int i = 0; i < lastTetrominosIndex(allBlocs); i++) {
       collide(allBlocs, i);
     }
@@ -79,6 +77,8 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
       }
     }
 
+    affiche(renderer, bloc, allBlocs, active, inactive);
+    fall(allBlocs);
     SDL_RenderPresent(renderer);
   }
 }
