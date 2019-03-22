@@ -59,8 +59,10 @@ int lastBlocIndex(blocs* tetrominos, int tetrominosIndex)
 // On fait tomber tous les tetrominos qui sont en état de mouvement
 void fall(blocs2* blocs)
 {
-  for (int k = 0; k < 2; k++) {
-    blocs[k].startY += 1;
+  for (int k = 0; k < lastTetrominosIndex(blocs); k++) {
+    if (blocs[k].move) {
+      blocs[k].startY += 2;
+    }
   }
 }
 
@@ -74,6 +76,7 @@ void addTetromino(blocs2* tetrominos, int startX, int startY, int type, int rota
   tetrominos[last].startX = startX;
   tetrominos[last].startY = startY;
   tetrominos[last].type = type;
+  tetrominos[last].move = true;
 
   // La matrice bi-dimentionnelle représentant le tetromino dépend de son type
   switch (type) {

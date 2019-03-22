@@ -17,6 +17,7 @@ struct blocs2 {
   int startX;
   int startY;
   int type;
+  bool move;
   std::vector<std::vector<int>> coordinate = std::vector<std::vector<int>>(MAX_TETROMINOS_SIZE, std::vector<int>(MAX_TETROMINOS_SIZE, 0));
 };
 
