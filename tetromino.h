@@ -22,8 +22,7 @@ struct blocs2 {
 };
 
 SDL_Texture* mkBloc(SDL_Renderer* renderer);
-int lastTetrominosIndex(struct blocs2* tetrominos);
-int lastBlocIndex(struct blocs *tetrominos, int tetrominosIndex);
+int lastIndex(struct blocs2* tetrominos);
 void fall(struct blocs2* tetrominos);
 void addTetromino(struct blocs2* tetrominos, int startX, int startY, int type, int rotation);
 SDL_Texture* bloc(SDL_Renderer* renderer);

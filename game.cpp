@@ -34,27 +34,14 @@ void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
   blocs2 allBlocs[MAX_TETROMINOS];
 
   // On rajoute un tetromino de type 1
-  addTetromino(allBlocs, 200, 100, 1, 0); // blocActual
-  addTetromino(allBlocs, 225, 25, 2, 0);  // blocAll
-  addTetromino(allBlocs, 400, 50, 3, 0);
-  addTetromino(allBlocs, 125, -200, 4, 0);
-  addTetromino(allBlocs, 200, -200, 5, 0);
-  addTetromino(allBlocs, 400, -200, 6, 0);
-
-  addTetromino(allBlocs, 0, -200, 4, 0);
-  addTetromino(allBlocs, 0, -400, 4, 0);
-  addTetromino(allBlocs, 0, -600, 3, 0);
-  addTetromino(allBlocs, 0, -900, 2, 0);
-
-  addTetromino(allBlocs, 200, -200, 4, 0);
-  addTetromino(allBlocs, 200, -400, 4, 0);
-  addTetromino(allBlocs, 200, -600, 3, 0);
-  addTetromino(allBlocs, 200, -900, 2, 0);
+  addTetromino(allBlocs, 225, -100, 1, 0);
+  addTetromino(allBlocs, 225, 100, 2, 0);
 
   SDL_Texture* bloc = mkBloc(renderer);
   while (run) {
     clearRender(renderer);
-    for (int i = 0; i < lastTetrominosIndex(allBlocs); i++) {
+    int last = lastIndex(allBlocs);
+    for (int i = 0; i < last; i++) {
       collide(allBlocs, i);
     }
     while (SDL_PollEvent(&e) != 0) {

@@ -27,7 +27,7 @@ SDL_Texture* mkBloc(SDL_Renderer* renderer)
   return bloc;
 }
 
-int lastTetrominosIndex(blocs2* tetrominos)
+int lastIndex(blocs2* tetrominos)
 {
   int last = 0;
 
@@ -42,24 +42,11 @@ int lastTetrominosIndex(blocs2* tetrominos)
   return last;
 }
 
-int lastBlocIndex(blocs* tetrominos, int tetrominosIndex)
-{
-  int last = 0;
-
-  for (int i = 0; i < MAX_TETROMINOS_BLOC; i++) {
-    if (tetrominos[tetrominosIndex].bloc[i] == NULL) {
-      last = i;
-      break;
-    }
-  }
-
-  return last;
-}
-
 // On fait tomber tous les tetrominos qui sont en état de mouvement
 void fall(blocs2* blocs)
 {
-  for (int k = 0; k < MAX_TETROMINOS; k++) {
+  int last = lastIndex(blocs);
+  for (int k = 0; k < last; k++) {
     if (blocs[k].move) {
       blocs[k].startY += 1;
     }
@@ -70,7 +57,7 @@ void fall(blocs2* blocs)
 void addTetromino(blocs2* tetrominos, int startX, int startY, int type, int rotation)
 {
   // On obtiens le dernier index des tetrominos
-  int last = lastTetrominosIndex(tetrominos);
+  int last = lastIndex(tetrominos);
 
   // On l'ajoute dans le tableau tetrominos en mémoire
   tetrominos[last].startX = startX;
@@ -247,7 +234,7 @@ void transpose(blocs2* tetromino, int rotation)
 void affiche(SDL_Renderer* renderer, SDL_Texture* bloc, blocs2* blocs, SDL_Texture* active, SDL_Texture* inactive)
 {
   // Pour chaque tetromino
-  for (int k = 0; k < 10; k++) {
+  for (int k = 0; k < lastIndex(blocs); k++) {
     // On fouille ses coordonnées, qui est une matrice 6x6
     // Si les coordonnées actuelle correspondent au début d'un tetromino
     // Alors on circule dedans pour construire le tetromino
