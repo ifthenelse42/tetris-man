@@ -5,7 +5,7 @@
 /**
  * Fonction: Engine::Log::info
  * -------------------
- * Affiche dans le terminal une information
+ * Affiche dans le terminal une information.
  *
  * @param text Texte à afficher dans le terminal
  */
@@ -17,7 +17,7 @@ void Engine::Log::info(const char text[100])
 /**
  * Fonction: Engine::Log::info
  * -------------------
- * Affiche dans le terminal un message d'erreur
+ * Affiche dans le terminal un message d'erreur.
  *
  * @param text Message d'erreur à afficher dans le terminal
  */

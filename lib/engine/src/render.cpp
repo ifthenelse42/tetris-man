@@ -5,8 +5,8 @@
 /**
  * Fonction: Engine::Render::create
  * -------------------
- * Créé un rendu SDL
- * C'est là où sera affecté tout ce que l'on veut afficher à l'utilisateur
+ * Créé un rendu SDL. 
+ * C'est là où sera affecté tout ce que l'on veut afficher à l'utilisateur.
  *
  * @param window Fenêtre où affecté le rendu
  * @return Pointeur vers le rendu créé
@@ -19,7 +19,7 @@ SDL_Renderer* Engine::Render::create(SDL_Window* window)
 /**
  * Fonction: Engine::Render::createWindow
  * -------------------
- * Créé une fenêtre, où sera affecté le rendu
+ * Créé une fenêtre, où sera affecté le rendu.
  *
  * @return Pointeur vers la fenêtre créée
  */
@@ -31,8 +31,8 @@ SDL_Window* Engine::Render::createWindow()
 /**
  * Fonction: Engine::Render::clear
  * -------------------
- * Rafraichis l'affichage
- * Ca permet d'afficher les éléments nouvellements ajoutés / modifiés dans le rendu
+ * Rafraichis l'affichage. 
+ * Ca permet d'afficher les éléments nouvellements ajoutés / modifiés dans le rendu.
  *
  * @see Game::Tetromino::display
  */

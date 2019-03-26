@@ -10,7 +10,7 @@
 /**
  * Fonction: Engine::Run::SDL
  * -------------------
- * Initialise la librairie SDL
+ * Initialise la librairie SDL.
  *
  * @see main.cpp
  * @see Engine::Error::initSDL
@@ -25,8 +25,8 @@ void Engine::Run::SDL()
 /**
  * Fonction: Engine::Run::loop
  * -------------------
- * Boucle d'exécution du jeu
- * Tout le jeu se déroule donc ici
+ * Boucle d'exécution du jeu. 
+ * Tout le jeu se déroule donc ici.
  *
  * @param renderer Rendu où le jeu est affiché
  * @param window Fenêtre où le rendu/le jeu se trouve
@@ -96,9 +96,9 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
 /**
  * Fonction: Engine::Run::close
  * -------------------
- * Lorsque le jeu se ferme, le moteur doit nettoyer la mémoire
- * On efface donc de la mémoire le rendu, la fenêtre, la police d'écriture puis la librairie SDL
- * Détruire le rendu a aussi comme effet de détruire tout son contenu, par exemple les textures
+ * Lorsque le jeu se ferme, le moteur doit nettoyer la mémoire. 
+ * On efface donc de la mémoire le rendu, la fenêtre, la police d'écriture puis la librairie SDL. 
+ * Détruire le rendu a aussi comme effet de détruire tout son contenu, par exemple les textures.
  *
  * @param renderer Rendu où le jeu est affiché
  * @param window Fenêtre où le rendu/le jeu se trouve

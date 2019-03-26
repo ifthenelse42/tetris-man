@@ -6,9 +6,9 @@
 /**
  * Fonction: Engine::Collision::xCollide
  * -------------------
- * Cette fonction viens vérifier la collision entre deux blocs - sur leurs points X1 (gauche) et X2 (droite)
- * Le bloc actuel 'actual' et tous les autres, 'all'
- * Le bloc actuel correspond au bloc de l'itération présente dans la boucle de fonctionnement du jeu
+ * Cette fonction viens vérifier la collision entre deux blocs - sur leurs points X1 (gauche) et X2 (droite). 
+ * Le bloc actuel 'actual' et tous les autres, 'all'. 
+ * Le bloc actuel correspond au bloc de l'itération présente dans la boucle de fonctionnement du jeu.
  *
  * @param actualX1 Coordonnée X1 du bloc actuel
  * @param actualX2 Coordonnée X2 du bloc actuel
@@ -26,9 +26,9 @@ bool Engine::Collision::xCollide(int actualX1, int actualX2, int allX1, int allX
 /**
  * Fonction: Engine::Collision::yCollide
  * -------------------
- * Cette fonction viens vérifier la collision entre deux blocs - sur leurs points Y1 (haut) et Y2 (bas)
- * Le bloc actuel 'actual' et tous les autres, 'all'
- * Le bloc actuel correspond au bloc de l'itération présente dans la boucle de fonctionnement du jeu
+ * Cette fonction viens vérifier la collision entre deux blocs - sur leurs points Y1 (haut) et Y2 (bas). 
+ * Le bloc actuel 'actual' et tous les autres, 'all'. 
+ * Le bloc actuel correspond au bloc de l'itération présente dans la boucle de fonctionnement du jeu.
  *
  * @param actualY1 Coordonnée Y1 du bloc actuel
  * @param actualY2 Coordonnée Y2 du bloc actuel
@@ -46,10 +46,10 @@ bool Engine::Collision::yCollide(int actualY1, int actualY2, int allY1, int allY
 /**
  * Fonction: Engine::Collision::tetrominoCollide
  * -------------------
- * Par soucis d'optimisation, cette fonction a été concue
- * Elle vient vérifier si la matrice représentant un tetromino touche une des autres
- * Ce SANS compter les points de la matrice correspondant à un bloc
- * Cela limite le nombre de calcul; on vérifie les matrices entre elles, puis si il y a collision, on viens vérifier les blocs entre eux
+ * Par soucis d'optimisation, cette fonction a été concue. 
+ * Elle vient vérifier si la matrice représentant un tetromino touche une des autres,
+ * et ce SANS compter les points de la matrice correspondant à un bloc. 
+ * Cela limite le nombre de calcul; on vérifie les matrices entre elles, puis si il y a collision, on viens vérifier les blocs entre eux.
  *
  * @param actualY1 Coordonnée Y1 de la matrice actuelle
  * @param actualY2 Coordonnée Y2 de la matrice actuelle
@@ -67,7 +67,7 @@ bool Engine::Collision::tetrominoCollide(int actualX1, int actualY1, int actualX
 /**
  * Fonction: Engine::Collision::screenCollide
  * -------------------
- * Vérifie si la coordonnée Y2 du tetromino actuel (ou quoi que ce soit d'autre) touche le bord inférieur de l'écran
+ * Vérifie si la coordonnée Y2 du tetromino actuel (ou quoi que ce soit d'autre) touche le bord inférieur de l'écran.
  *
  * @param actualY2 Coordonnée Y2 du tetromino actuel (ou quoi que ce soit d'autre)
  * @see Engine::Collision::collide
@@ -83,9 +83,9 @@ bool Engine::Collision::screenCollide(int actualY2)
 /**
  * Fonction: Engine::Collision::screenCollide
  * -------------------
- * Exécute les vérifications des collisions du bloc de tetromino actuel avec tous les autres
- * S'il y a collision, modifie la structure du tetromino actuel, pour le rendre immobile
- * En modifiant sa variable booléenne 'move' pour devenir false, donc immobile
+ * Exécute les vérifications des collisions du bloc de tetromino actuel avec tous les autres. 
+ * S'il y a collision, modifie la structure du tetromino actuel, pour le rendre immobile, 
+ * en modifiant sa variable booléenne 'move' pour devenir false, donc immobile.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param tetrominoIndex Index du tetromino actuel dans le tableau contenant tous les tetrominos en mémoire

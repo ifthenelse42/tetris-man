@@ -13,7 +13,7 @@
 /**
  * Fonction: main
  * ------------------------
- * Fonction principale venant puiser dans toute les classes du jeu pour le faire fonctionner
+ * Fonction principale venant puiser dans toute les classes du jeu pour le faire fonctionner.
  *
  * @param argc Aucune info dessus - mais c'est beau
  * @param argv Tableau dynamique contenant certaines instructions fournis par le système d'exploitation

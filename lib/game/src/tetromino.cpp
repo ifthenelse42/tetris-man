@@ -1,7 +1,7 @@
 #include "game/tetromino.hpp"
 #include "SDL2/SDL.h"
-#include "engine/collision.hpp"
 #include "engine/engine.hpp"
+#include "engine/collision.hpp"
 #include "engine/texture.hpp"
 #include "game/game.hpp"
 #include <iostream>
@@ -10,8 +10,8 @@
 /**
  * Fonction: Game::Tetromino::lastIndex
  * -------------------
- * Retrouve le dernier index réel du tableau contenant les tetrominos
- * Cela permet de limiter les itérations, le nombre maximum de tetromino dans la mémoire étant fixe
+ * Retrouve le dernier index réel du tableau contenant les tetrominos. 
+ * Cela permet de limiter les itérations, le nombre maximum de tetromino dans la mémoire étant fixe.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @see Game::Tetromino
@@ -35,17 +35,17 @@ int Game::Tetromino::lastIndex(blocs* tetrominos)
 /**
  * Fonction: Game::Tetromino::fall
  * -------------------
- * Fait tomber les tetrominos
+ * Fait tomber les tetrominos.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @see Game::Tetromino
  */
 void Game::Tetromino::fall(blocs* tetrominos)
 {
-  int last = lastIndex(blocs);
+  int last = lastIndex(tetrominos);
   for (int k = 0; k < last; k++) {
-    if (blocs[k].move) {
-      blocs[k].startY += 1;
+    if (tetrominos[k].move) {
+      tetrominos[k].startY += 1;
     }
   }
 }
@@ -53,8 +53,8 @@ void Game::Tetromino::fall(blocs* tetrominos)
 /**
  * Fonction: Game::Tetromino::add
  * -------------------
- * Ajoute un tetromino dans la mémoire
- * display() se charge ensuite de les afficher
+ * Ajoute un tetromino dans la mémoire, 
+ * display() se charge ensuite de les afficher.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param startX Position initiale X de la matrice représentant le tetromino
@@ -127,7 +127,7 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
 /**
  * Fonction: Game::Tetromino::rotationAmount
  * ------------------------
- * Renvoie en tant que condition le nombre de rotation possible d'un tetromino, selon son type
+ * Renvoie en tant que condition le nombre de rotation possible d'un tetromino, selon son type.
  *
  * @param type Type du tetromino (ce qui défini donc sa forme)
  * @param rotation Nombre de rotation initiale du tetromino
@@ -158,10 +158,10 @@ bool Game::Tetromino::rotationAmount(int type, int rotation)
 /**
  * Fonction: Game::Tetromino::shift
  * ------------------------
- * Cette fonction viens déplacer la position initiale du tetromino après rotation
- * Car la rotation implique un léger déplacement
- * Cette fonction viens alors régler ce léger déplacement
- * Pour que la rotation ne semble pas bouger pour l'utilisateur
+ * Cette fonction viens déplacer la position initiale du tetromino après rotation,
+ * car la rotation implique un léger déplacement, 
+ * cette fonction viens alors régler ce léger déplacement, 
+ * pour que la rotation ne semble pas bouger pour l'utilisateur.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param rotation Nombre de rotation du tetromino
@@ -233,8 +233,8 @@ void Game::Tetromino::shift(blocs* tetrominos, int rotation)
 /**
  * Fonction: Game::Tetromino::transpose
  * ------------------------
- * Transposition de la matrice représentant un tetromino
- * Ce qui implique une rotation de la matrice
+ * Transposition de la matrice représentant un tetromino, 
+ * ce qui implique une rotation de la matrice.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param rotation Nombre de rotation du tetromino
@@ -274,7 +274,7 @@ void Game::Tetromino::transpose(blocs* tetrominos, int rotation)
 /**
  * Fonction: Game::Tetromino::display
  * ------------------------
- * Cette fonction viens afficher un tetromino dans le rendu, afin d'être visible par l'utilisateur
+ * Cette fonction viens afficher un tetromino dans le rendu, afin d'être visible par l'utilisateur.
  *
  * @param renderer Rendu où afficher le tetromino - il y en a forcément un seul ceci dis -
  * @param bloc Texture du bloc à afficher; pour l'instant, tout les tetrominos utilisent le même bloc, donc il faudra revoir ca pour les multiples couleurs

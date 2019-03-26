@@ -8,7 +8,7 @@
 /**
  * Fonction: Engine::Texture::create
  * ------------------------
- * Créé une texture et la renvoie
+ * Créé une texture et la renvoie.
  *
  * @param renderer Rendu où affecter la nouvelle texture
  * @param width Largeur de la texture désirée
@@ -28,10 +28,10 @@ SDL_Texture* Engine::Texture::create(SDL_Renderer* renderer, int width, int heig
 /**
  * Fonction: Engine::Texture::createBloc
  * ------------------------
- * Créé un bloc et le renvoi
- * Pour créer un bloc, on créé une texture vide, puis on affecte le rendu à cette texture uniquement
- * Puis on change la couleur du rendu et on y créé des lignes
- * Cela donne un bloc de tetromino
+ * Créé un bloc et le renvoi. 
+ * Pour créer un bloc, on créé une texture vide, puis on affecte le rendu à cette texture uniquement, 
+ * puis on change la couleur du rendu et on y créé des lignes. 
+ * Cela donne un bloc de tetromino.
  *
  * TODO: couleur à choisir en argument de la fonction
  *
@@ -74,7 +74,7 @@ SDL_Texture* Engine::Texture::createBloc(SDL_Renderer* renderer)
 /**
  * Fonction: Engine::Texture::createFromImage
  * ------------------------
- * Créé une texture depuis une image
+ * Créé une texture depuis une image.
  *
  * @param renderer Rendu où affecter la texture
  * @param imgBuffer Image que l'on souhaite transformer en texture
@@ -98,7 +98,7 @@ SDL_Texture* Engine::Texture::createFromImage(SDL_Renderer* renderer, SDL_Surfac
 /**
  * Fonction: Engine::Texture::createText
  * ------------------------
- * Créé un texte
+ * Créé un texte.
  *
  * @param renderer Rendu où affecter la texture du texte
  * @param color Couleur du texte
@@ -122,7 +122,7 @@ SDL_Texture* Engine::Texture::createText(SDL_Renderer* renderer, SDL_Color color
 /**
  * Fonction: Engine::Texture::createLine
  * ------------------------
- * Créé une ligne
+ * Créé une ligne.
  *
  * @param renderer Rendu où affecter la ligne
  * @param r Code hexadécimal rouge
@@ -143,7 +143,7 @@ void Engine::Texture::createLine(SDL_Renderer* renderer, int r, int g, int b, in
 /**
  * Fonction: Engine::Texture::display
  * ------------------------
- * Affiche une texture dans le rendu, donc à l'utilisateur
+ * Affiche une texture dans le rendu, donc à l'utilisateur.
  *
  * @param renderer Rendu où afficher la texture
  * @param texture Texture que l'on souhaite afficher dans le rendu
@@ -161,9 +161,9 @@ void Engine::Texture::display(SDL_Renderer* renderer, SDL_Texture* texture, int 
 /**
  * Fonction: Engine::Texture::displayText
  * ------------------------
- * Affiche la texture d'un texte
- * La différence avec Engine::Texture::display réside dans l'inutilité d'attribuer une largeur et une hauteur à un texte
- * Ces deux variables sont donc définies par défaut à 0 dans cette fonction
+ * Affiche la texture d'un texte. 
+ * La différence avec Engine::Texture::display réside dans l'inutilité d'attribuer une largeur et une hauteur à un texte, 
+ * ces deux variables sont donc définies par défaut à 0 dans cette fonction.
  *
  * @param renderer Rendu où afficher la texture
  * @param texture Texture que l'on souhaite afficher dans le rendu

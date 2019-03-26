@@ -6,7 +6,7 @@
 /**
  * Fonction: Engine::Error::initSDL
  * -------------------
- * Vérifie si il y a une erreur dans l'initialisation de SDL, et renvoie 0 ou 1 en fonction
+ * Vérifie si il y a une erreur dans l'initialisation de SDL, et renvoie 0 ou 1 en fonction.
  *
  * @see main.cpp
  * @return -1 s'il y a une erreur dans l'initialisation de SDL, sinon 1
@@ -24,7 +24,7 @@ int Engine::Error::initSDL()
 /**
  * Fonction: Engine::Error::initTTF
  * -------------------
- * Vérifie si il y a une erreur dans l'initialisation du module TTF de SDL, et renvoie 0 ou 1 en fonction
+ * Vérifie si il y a une erreur dans l'initialisation du module TTF de SDL, et renvoie 0 ou 1 en fonction.
  *
  * @see main.cpp
  * @return -1 s'il y a une erreur dans l'initialisation du module TTF de SDL, sinon 1
@@ -42,7 +42,7 @@ int Engine::Error::initTTF()
 /**
  * Fonction: Engine::Error::rendererAndWindow
  * -------------------
- * Vérifie si le rendu et la fenêtre ont bien été créés
+ * Vérifie si le rendu et la fenêtre ont bien été créés.
  *
  * @see main.cpp
  * @return -1 s'il y a une erreur dans l'une des deux créations, 1 sinon
@@ -64,7 +64,7 @@ int Engine::Error::rendererAndWindow(SDL_Renderer* renderer, SDL_Window* window)
 /**
  * Fonction: Engine::Error::textureLoad
  * -------------------
- * Vérifie si le chargement de la texture donnée s'est déroulée avec succès
+ * Vérifie si le chargement de la texture donnée s'est déroulée avec succès.
  *
  * @see Engine::Texture
  * @return -1 s'il y a une erreur dans le chargement de la texture, 1 sinon
@@ -82,7 +82,7 @@ int Engine::Error::textureLoad(SDL_Texture* texture)
 /**
  * Fonction: Engine::Error::textureLoad
  * -------------------
- * Vérifie si le chargement de la texture donnée s'est déroulée avec succès
+ * Vérifie si le chargement de la texture donnée s'est déroulée avec succès.
  *
  * @see Engine::Texture
  * @return -1 s'il y a une erreur dans le chargement de la texture, 1 sinon
@@ -100,7 +100,7 @@ int Engine::Error::surfaceGeneration(SDL_Surface* surface)
 /**
  * Fonction: Engine::Error::fontLoad
  * -------------------
- * Vérifie si le chargement de la police d'écriture donnée s'est déroulée avec succès
+ * Vérifie si le chargement de la police d'écriture donnée s'est déroulée avec succès.
  *
  * @see main.cpp
  * @return -1 s'il y a une erreur dans le chargement de la police d'écriture, 1 sinon
