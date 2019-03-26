@@ -1,1 +1,4 @@
-tetris-man
+build/tetris-man
+build/doc
+html
+latex
