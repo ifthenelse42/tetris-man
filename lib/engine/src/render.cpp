@@ -9,6 +9,7 @@
  * C'est là où sera affecté tout ce que l'on veut afficher à l'utilisateur.
  *
  * @param window Fenêtre où affecté le rendu
+ *
  * @return Pointeur vers le rendu créé
  */
 SDL_Renderer* Engine::Render::create(SDL_Window* window)

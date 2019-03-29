@@ -14,9 +14,11 @@
  * @param actualX2 Coordonnée X2 du bloc actuel
  * @param allX1 Coordonnée X1 de tous les autres blocs
  * @param allX2 Coordonnée X2 de tous les autres blocs
+ *
+ * @return 0 si aucune collision X, 1 sinon
+ *
  * @see Engine::Collision
  * @see Engine::Run::Loop
- * @return 0 si aucune collision X, 1 sinon
  */
 bool Engine::Collision::xCollide(int actualX1, int actualX2, int allX1, int allX2)
 {
@@ -34,9 +36,11 @@ bool Engine::Collision::xCollide(int actualX1, int actualX2, int allX1, int allX
  * @param actualY2 Coordonnée Y2 du bloc actuel
  * @param allY1 Coordonnée Y1 de tous les autres blocs
  * @param allY2 Coordonnée Y2 de tous les autres blocs
+ *
+ * @return 0 si aucune collision X, 1 sinon
+ *
  * @see Engine::Collision
  * @see Engine::Run::Loop
- * @return 0 si aucune collision X, 1 sinon
  */
 bool Engine::Collision::yCollide(int actualY1, int actualY2, int allY1, int allY2)
 {
@@ -55,8 +59,10 @@ bool Engine::Collision::yCollide(int actualY1, int actualY2, int allY1, int allY
  * @param actualY2 Coordonnée Y2 de la matrice actuelle
  * @param allY1 Coordonnée Y1 de toutes les autres matrices
  * @param allY2 Coordonnée Y2 de toutes les autres matrices
- * @see Engine::Collision::collide
+ *
  * @return 0 si aucune collision X, 1 sinon
+ *
+ * @see Engine::Collision::collide
  */
 bool Engine::Collision::tetrominoCollide(int actualX1, int actualY1, int actualX2, int actualY2, int allX1, int allY1, int allX2, int allY2)
 {
@@ -70,8 +76,10 @@ bool Engine::Collision::tetrominoCollide(int actualX1, int actualY1, int actualX
  * Vérifie si la coordonnée Y2 du tetromino actuel (ou quoi que ce soit d'autre) touche le bord inférieur de l'écran.
  *
  * @param actualY2 Coordonnée Y2 du tetromino actuel (ou quoi que ce soit d'autre)
- * @see Engine::Collision::collide
+ *
  * @return 0 si aucune collision, 1 sinon
+ *
+ * @see Engine::Collision::collide
  */
 bool Engine::Collision::screenCollide(int actualY2)
 {
@@ -89,6 +97,7 @@ bool Engine::Collision::screenCollide(int actualY2)
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param tetrominoIndex Index du tetromino actuel dans le tableau contenant tous les tetrominos en mémoire
+ *
  * @see Engine::Collision::xCollide
  * @see Engine::Collision::yCollide
  */
@@ -117,7 +126,6 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
     if ((k != tetrominoIndex)
         && (tetrominoCollide(tetrominoActualx1, tetrominoActualy1, tetrominoActualx2, tetrominoActualy2, tetrominoAllx1, tetrominoAlly1, tetrominoAllx2, tetrominoAlly2))
         && (tetrominos[tetrominoIndex].move || tetrominos[k].move)) {
-      //std::cout << "Bloc " << k << " entre en collision avec le bloc " << tetrominoIndex << " - on procède donc à la vérification des collisions des blocs entre eux" << std::endl;
       // On voit si chaque startX/Y + les points de la matrice où un bloc est présent touche un autre
       // Si la coordonnée actuelle est un bloc - on le compare avec tous les autres blocs
       for (int xActual = 0; xActual < Game::Tetromino::maxSize; xActual++) {
@@ -145,6 +153,9 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
 
                     // Si le bloc actuel touche un autre bloc, on le rend lui aussi immobile
                     tetrominos[tetrominoIndex].move = false;
+
+                    // L'autre bloc doit alors devenir zombie
+                    //tetrominos[k].zombie = true;
                   }
                 }
               }

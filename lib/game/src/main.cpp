@@ -17,6 +17,7 @@
  *
  * @param argc Aucune info dessus - mais c'est beau
  * @param argv Tableau dynamique contenant certaines instructions fournis par le système d'exploitation
+ *
  * @see Game::Tetromino
  */
 int main(int argc, char **argv)

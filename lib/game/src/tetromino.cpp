@@ -1,8 +1,9 @@
-#include "game/tetromino.hpp"
 #include "SDL2/SDL.h"
 #include "engine/engine.hpp"
 #include "engine/collision.hpp"
+#include "game/tetromino.hpp"
 #include "engine/texture.hpp"
+#include "engine/render.hpp"
 #include "game/game.hpp"
 #include <iostream>
 #include <math.h>
@@ -14,15 +15,17 @@
  * Cela permet de limiter les itérations, le nombre maximum de tetromino dans la mémoire étant fixe.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
- * @see Game::Tetromino
+ *
  * @return Le dernier index réel
+ *
+ * @see Game::Tetromino
  */
 int Game::Tetromino::lastIndex(blocs* tetrominos)
 {
   int last = 0;
 
+  // Si le type est défini à 0, ca veut dire que ca ne correspond à aucun tetromino
   for (int i = 0; i < Tetromino::max; i++) {
-    // Si le type est défini à 0, ca veut dire que ca ne correspond à aucun tetromino
     if (tetrominos[i].type == 0) {
       last = i;
       break;
@@ -38,6 +41,7 @@ int Game::Tetromino::lastIndex(blocs* tetrominos)
  * Fait tomber les tetrominos.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
+ *
  * @see Game::Tetromino
  */
 void Game::Tetromino::fall(blocs* tetrominos)
@@ -45,7 +49,7 @@ void Game::Tetromino::fall(blocs* tetrominos)
   int last = lastIndex(tetrominos);
   for (int k = 0; k < last; k++) {
     if (tetrominos[k].move) {
-      tetrominos[k].startY += 1;
+      tetrominos[k].startY += 5;
     }
   }
 }
@@ -61,6 +65,7 @@ void Game::Tetromino::fall(blocs* tetrominos)
  * @param startY Position initiale Y de la matrice représentant le tetromino
  * @param type Type du tetromino (ce qui défini donc sa forme)
  * @param rotation Nombre de rotation initiale du tetromino
+ *
  * @see Game::Tetromino
  */
 void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, int rotation)
@@ -72,7 +77,9 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
   tetrominos[last].startX = startX;
   tetrominos[last].startY = startY;
   tetrominos[last].type = type;
+  tetrominos[last].rotation = 0;
   tetrominos[last].move = true;
+  tetrominos[last].zombie = false;
 
   // La matrice bi-dimentionnelle représentant le tetromino dépend de son type
   switch (type) {
@@ -125,14 +132,112 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
 }
 
 /**
+ * Fonction: Game::Tetromino::addRandom
+ * ------------------------
+ * Fait apparaître dans le jeu un tetromino s'imbricant parfaitement avec le tetromino actuel. 
+ * Il apparaît au dessus du bloc actuel.
+ *
+ * @param tetrominos Pointeur vers les tetrominos existant dans la partie
+ * @param interlocks Pointeur vers les tetrominos compatible avec le tetromino actuel
+ *
+ * @see Game::Tetromino::interlock
+ * @see Game::Tetromino::add
+ */
+void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetrominoActual, Game::Tetromino::compatible* interlocks)
+{
+  Game::Tetromino tetromino;
+  int indexRand;
+
+  int startX = tetrominos[0].startX + interlocks[0].shiftX;
+  int startY = tetromino.interlockStartY; // tout les tetrominos apparaissent hors écran
+  int i = 0;                              // Sert à suivre l'itération dans les tetrominos compatible
+  int indexMax = 0;                       // Correspond au dernier index où se trouve un tetromino compatible
+
+  /**
+   * On fait une boucle sur toute les imbrications possible du tetromino actuel, pour obtenir 
+   * l'index minimum et l'index maximum où se trouve une imbrication possible. 
+   * Ensuite, on prendra cette intervalle pour piocher dedans une imbrication au hasard.
+   */
+  while (interlocks[i].type != 0 && i < tetromino.maxInterlock) {
+    i++;
+  }
+  indexMax = i - 1; // Après l'arrêt de la boucle, on peut récupérer le dernier index
+
+  /**
+   * On choisit maintenant un index aléatoire. 
+   * On doit absolument prendre une intervalle entre 0 et le dernier index
+   */
+  srand(time(NULL)); // Nécessaire pour la génération aléatoire
+  indexRand = (rand() % (indexMax + 1) + 1) - 1;
+
+  // Enfin, le tetromino est inséré dans la mémoire
+  tetromino.add(tetrominos, startX, startY, interlocks[indexRand].type, interlocks[indexRand].rotation);
+}
+
+/**
+ * Fonction: Game::Tetromino::fallingTetrominos
+ * ------------------------
+ * Retourne le nombre de tetrominos tombant dans la partie. 
+ * C'est-à-dire qui a la propriété .move = true.
+ *
+ * @param tetrominos Pointeur vers les tetrominos existant dans la partie
+ *
+ * @return Le nombre de tetrominos tombant
+ */
+unsigned int Game::Tetromino::fallingTetrominos(Game::Tetromino::blocs* tetrominos)
+{
+  Tetromino tetromino;
+
+  int max = tetromino.lastIndex(tetrominos);
+  int amount = 0;
+
+  for (int i = 0; i < max; i++) {
+    if (tetrominos[i].move) {
+      amount++;
+    }
+  }
+
+  return amount;
+}
+
+/**
+ * Fonction: Game::Tetromino::generateRandom
+ * ------------------------
+ * Fait apparaître dans la partie des tetrominos aléatoirement pour remplir la zone de jeu. 
+ * Le joueur doit donc éviter ces tetrominos le plus longtemps possible. 
+ * Cette fonction est invoquée tout les x frames.
+ *
+ * @param tetrominos Pointeur vers les tetrominos existant dans la partie
+ * @param interlocks Pointeur vers les tetrominos compatible avec le tetromino actuel
+ *
+ * @see Game::Tetromino::interlock
+ * @see Game::Tetromino::add
+ * @see Game::Tetromino::addRandom
+ */
+void Game::Tetromino::generateRandom(Game::Tetromino::blocs* tetrominos, Game::Tetromino::compatible* interlocks)
+{
+  //TODO
+  Tetromino tetromino;
+
+  int amount = fallingTetrominos(tetrominos); // Nombre de tetrominos en train de tomber
+  int last = lastIndex(tetrominos);           // Dernier index où un tetromino est présent
+
+  //srand(time(NULL)); // Nécessaire pour la génération aléatoire
+  //indexRand = (rand() % (k + 1) + 1) - 1;
+  //tetromino.addRandom(tetrominos, tetrominosNotZombies[indexRand], interlocks);
+}
+
+/**
  * Fonction: Game::Tetromino::rotationAmount
  * ------------------------
  * Renvoie en tant que condition le nombre de rotation possible d'un tetromino, selon son type.
  *
  * @param type Type du tetromino (ce qui défini donc sa forme)
  * @param rotation Nombre de rotation initiale du tetromino
- * @see Game::Tetromino
+ *
  * @return Condition d'intervalle sur le nombre de rotation possible
+ *
+ * @see Game::Tetromino
  */
 bool Game::Tetromino::rotationAmount(int type, int rotation)
 {
@@ -165,6 +270,7 @@ bool Game::Tetromino::rotationAmount(int type, int rotation)
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param rotation Nombre de rotation du tetromino
+ *
  * @see Game::Tetromino
  */
 void Game::Tetromino::shift(blocs* tetrominos, int rotation)
@@ -172,7 +278,6 @@ void Game::Tetromino::shift(blocs* tetrominos, int rotation)
   Tetromino tetromino;
 
   switch (tetrominos->type) {
-  // Tetromino L
   case 1:
     if (rotation == 1) {
       tetrominos->startX -= tetromino.blocWidth * 2;
@@ -185,7 +290,6 @@ void Game::Tetromino::shift(blocs* tetrominos, int rotation)
       tetrominos->startY -= tetromino.blocHeight * 2;
     }
     break;
-  // Tetromino I
   case 2:
     if (rotation == 1) {
       tetrominos->startX -= tetromino.blocWidth;
@@ -194,7 +298,6 @@ void Game::Tetromino::shift(blocs* tetrominos, int rotation)
 
     break;
   case 3:
-    // Aucune rotation pour lui
     break;
   case 4:
     if (rotation == 1) {
@@ -238,6 +341,7 @@ void Game::Tetromino::shift(blocs* tetrominos, int rotation)
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param rotation Nombre de rotation du tetromino
+ *
  * @see Game::Tetromino
  */
 void Game::Tetromino::transpose(blocs* tetrominos, int rotation)
@@ -247,8 +351,10 @@ void Game::Tetromino::transpose(blocs* tetrominos, int rotation)
    * Différents types de tetrominos
    * 1: L -> 3 rotations
    * 2: I -> 1 rotation
-   * 3:
-   * 4:
+   * 3: O -> 0 rotation
+   * 4: s -> 1 rotation
+   * 5: z -> 1 rotation
+   * 6: T -> 3 rotations
    * */
   blocs transposed;
 
@@ -268,6 +374,257 @@ void Game::Tetromino::transpose(blocs* tetrominos, int rotation)
 
     // Et enfin on décale le tetromino pour que le déplacement du à la transposition soit transparente
     Tetromino::shift(tetrominos, rotation);
+
+    // Puis on met à jour la structure du tetromino pour refléter la nouvelle rotation - qui est effectuée une seule fois dans la vie d'un tetromino
+    tetrominos->rotation = rotation;
+  }
+}
+
+/**
+ * Fonction: Game::Tetromino::interlock
+ * ------------------------
+ * Renvoie un tableau contenant les types et rotation des tetrominos s'imbricant
+ * avec le tetromino actuel. 
+ * Cette fonction servira pour l'apparition aléatoire de tetrominos.
+ *
+ * @param tetrominos Pointeur vers le tetromino actuel
+ *
+ * @return Tableau pointant vers les tetrominos compatible avec le tetromino actuel
+ *
+ * @see Game::Tetromino
+ */
+void Game::Tetromino::interlock(blocs tetrominos, compatible* interlocks, int index)
+{
+  Game::Tetromino tetromino;          // On déclare un objet pour accéder à la classe Tetromino
+  int type = tetrominos.type;         // On récupère le type du tetromino
+  int rotation = tetrominos.rotation; // Et sa rotation
+
+  // On regarde le type du tetromino actuel
+  switch (type) {
+  case 1:
+    // Et on voit sa rotation également
+    switch (rotation) {
+    case 0:
+      /*
+       * Par exemple: dans le cas où le type est 1 et qu'il n'y a aucune rotation, 
+       * on fournis une liste de tetrominos s'imbricant avec celui-ci. 
+       * Il faut également ajouter un decalage X/Y pour mettre une imbrication parfaite selon le type et la rotation.
+       */
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 1;
+      interlocks[0].rotation = 2;
+
+      interlocks[1].shiftX = tetromino.blocWidth;
+      interlocks[1].type = 3;
+      interlocks[1].rotation = 0;
+
+      break;
+    case 1:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 6;
+      interlocks[0].rotation = 2;
+      break;
+    case 2:
+      interlocks[0].shiftX = tetromino.blocWidth * 2;
+      interlocks[0].type = 1;
+      interlocks[0].rotation = 0;
+
+      interlocks[1].shiftX = tetromino.blocWidth * 2;
+      interlocks[1].type = 3;
+      interlocks[1].rotation = 0;
+      break;
+    case 3:
+      interlocks[0].shiftX = 0;
+      interlocks[0].type = 1;
+      interlocks[0].rotation = 0;
+
+      interlocks[1].shiftX = 0;
+      interlocks[1].type = 6;
+      interlocks[1].rotation = 0;
+
+      interlocks[2].shiftX = tetromino.blocWidth;
+      interlocks[2].type = 1;
+      interlocks[2].rotation = 1;
+
+      interlocks[3].shiftX = 0;
+      interlocks[3].type = 4;
+      interlocks[3].rotation = 0;
+      break;
+    }
+    break;
+  case 2:
+    switch (rotation) {
+    case 0:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 1;
+      interlocks[0].rotation = 2;
+
+      interlocks[1].shiftX = 0;
+      interlocks[1].type = 2;
+      interlocks[1].rotation = 0;
+
+      interlocks[2].shiftX = 0;
+      interlocks[2].type = 4;
+      interlocks[2].rotation = 1;
+
+      interlocks[3].shiftX = -(tetromino.blocWidth * 2);
+      interlocks[3].type = 5;
+      interlocks[3].rotation = 1;
+
+      break;
+    case 1:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 2;
+      interlocks[0].rotation = 1;
+
+      interlocks[1].shiftX = tetromino.blocWidth;
+      interlocks[1].type = 4;
+      interlocks[1].rotation = 0;
+
+      interlocks[2].shiftX = 0;
+      interlocks[2].type = 5;
+      interlocks[2].rotation = 0;
+      break;
+    }
+    break;
+  case 3:
+    interlocks[0].shiftX = 0;
+    interlocks[0].type = 3;
+    interlocks[0].rotation = 0;
+
+    interlocks[1].shiftX = 0;
+    interlocks[1].type = 1;
+    interlocks[1].rotation = 0;
+
+    break;
+  case 4:
+    switch (rotation) {
+    case 0:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 1;
+      interlocks[0].rotation = 1;
+
+      interlocks[1].shiftX = tetromino.blocWidth;
+      interlocks[1].type = 3;
+      interlocks[1].rotation = 0;
+
+      interlocks[2].shiftX = 0;
+      interlocks[2].type = 6;
+      interlocks[2].rotation = 2;
+      break;
+    case 1:
+      interlocks[0].shiftX = tetromino.blocWidth * 2;
+      interlocks[0].type = 4;
+      interlocks[0].rotation = 1;
+
+      interlocks[1].shiftX = tetromino.blocWidth * 3;
+      interlocks[1].type = 1;
+      interlocks[1].rotation = 2;
+
+      break;
+    }
+    break;
+  case 5:
+    switch (rotation) {
+    case 0:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 4;
+      interlocks[0].rotation = 0;
+
+      break;
+    case 1:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 5;
+      interlocks[0].rotation = 1;
+
+      interlocks[1].shiftX = tetromino.blocWidth * 2;
+      interlocks[1].type = 2;
+      interlocks[1].rotation = 0;
+
+      interlocks[2].shiftX = tetromino.blocWidth * 3;
+      interlocks[2].type = 1;
+      interlocks[2].rotation = 1;
+
+      break;
+    }
+    break;
+  case 6:
+    switch (rotation) {
+    case 0:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 1;
+      interlocks[0].rotation = 3;
+
+      interlocks[1].shiftX = 0;
+      interlocks[1].type = 4;
+      interlocks[1].rotation = 0;
+
+      interlocks[2].shiftX = 0;
+      interlocks[2].type = 5;
+      interlocks[2].rotation = 0;
+
+      interlocks[3].shiftX = tetromino.blocWidth;
+      interlocks[3].type = 2;
+      interlocks[3].rotation = 1;
+      break;
+    case 1:
+      interlocks[0].shiftX = tetromino.blocWidth;
+      interlocks[0].type = 5;
+      interlocks[0].rotation = 1;
+
+      interlocks[1].shiftX = tetromino.blocWidth * 3;
+      interlocks[1].type = 1;
+      interlocks[1].rotation = 1;
+      break;
+    case 2:
+      interlocks[0].shiftX = tetromino.blocWidth * 2;
+      interlocks[0].type = 1;
+      interlocks[0].rotation = 1;
+      break;
+    case 3:
+      interlocks[0].shiftX = 0;
+      interlocks[0].type = 4;
+      interlocks[0].rotation = 1;
+      break;
+    }
+    break;
+  }
+}
+
+/**
+ * Fonction: Game::Tetromino::handleSpawn
+ * ------------------------
+ * Gère le spawner de tetrominos.
+ *
+ * @param tetrominos Pointeur vers le tetromino actuel
+ * @param larry Spawner de tetromino
+ *
+ * @see Game::Tetromino::spawn
+ */
+void Game::Tetromino::handleSpawn(blocs tetrominos, Game::Tetromino::spawn* larry)
+{
+  Game::Tetromino tetromino;
+  Engine::Render render;
+
+  /**
+   * On gère ici le sens de déplacement du spawner. 
+   * Si le x1 du spawner va en dessous de 0, on change de sens. 
+   * Si le x2 du spawner va au dessus de render.width, on change de sens.
+   */
+  if (larry->goesLeft) {
+    if (larry->x1 - tetromino.blocWidth < 0) {
+      larry->goesLeft = !larry->goesLeft;
+    } else {
+      larry->x1 -= tetromino.blocWidth;
+      larry->x2 = larry->x1 + tetromino.blocWidth;
+    }
+  } else {
+    if (larry->x2 > render.width) {
+      larry->goesLeft = !larry->goesLeft;
+    } else {
+      larry->x1 += tetromino.blocWidth;
+      larry->x2 = larry->x1 + tetromino.blocWidth;
+    }
   }
 }
 
@@ -280,6 +637,7 @@ void Game::Tetromino::transpose(blocs* tetrominos, int rotation)
  * @param bloc Texture du bloc à afficher; pour l'instant, tout les tetrominos utilisent le même bloc, donc il faudra revoir ca pour les multiples couleurs
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param rotation Nombre de rotation du tetromino
+ *
  * @see Game::Tetromino
  */
 void Game::Tetromino::display(SDL_Renderer* renderer, SDL_Texture* bloc, blocs* tetrominos, SDL_Texture* active, SDL_Texture* inactive)

@@ -13,6 +13,7 @@
  * @param renderer Rendu où affecter la nouvelle texture
  * @param width Largeur de la texture désirée
  * @param height Hauteur de la texture désirée
+ *
  * @return Le pointeur vers la texture nouvellement créée
  */
 SDL_Texture* Engine::Texture::create(SDL_Renderer* renderer, int width, int height)

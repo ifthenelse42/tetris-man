@@ -2,10 +2,11 @@
 #include "SDL2/SDL_ttf.h"
 #include "engine/engine.hpp"
 #include "engine/collision.hpp"
-#include "engine/run.hpp"
 #include "engine/error.hpp"
-#include "engine/texture.hpp"
 #include "engine/render.hpp"
+#include "engine/texture.hpp"
+#include "engine/run.hpp"
+#include <iostream>
 
 /**
  * Fonction: Engine::Run::SDL
@@ -31,6 +32,7 @@ void Engine::Run::SDL()
  * @param renderer Rendu où le jeu est affiché
  * @param window Fenêtre où le rendu/le jeu se trouve
  * @param font Police d'écriture utilisé dans le jeu
+ *
  * @see main.cpp
  * @see Engine::Error::initSDL
  * @see Engine::Texture
@@ -46,6 +48,17 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   Game::Tetromino tetromino;
 
   bool run = true;
+  int ticks = 0;
+
+  /**
+   * On fait apparaître un spawner unique qui se déplace de gauche à 
+   * droite pour faire apparaître de nouveaux blocs dans la partie. 
+   * Ces nouveaux blocs viendront s'imbriquer parfaitement dans la partie.
+   */
+  Game::Tetromino::spawn spawner;
+  Game::Tetromino::spawn* larry = &spawner;
+  larry->x1 = render.width - tetromino.blocWidth;
+  larry->x2 = larry->x1 + tetromino.blocWidth;
 
   // On génère un texte
   const char* activeText = "1";
@@ -55,18 +68,52 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
 
   SDL_Event e;
   Game::Tetromino::blocs tetrominos[Game::Tetromino::max];
+  Game::Tetromino::compatible interlocks[Game::Tetromino::maxInterlock]; // On initialise la structure pointant vers les tetrominos imbricable avec le tetromino actuel
 
   // On rajoute un tetromino de type 1
-  tetromino.add(tetrominos, 225, -100, 1, 0);
-  tetromino.add(tetrominos, 225, 100, 2, 0);
+  tetromino.add(tetrominos, 225, 0, 4, 0);
+  tetromino.add(tetrominos, 225, 300, 2, 0);
 
+  // Maintenant on fait apparaître un tetromino aléatoire s'imbricant avec le tetromino actuel
   SDL_Texture* bloc = texture.createBloc(renderer);
+
+  /**
+   * Boucle d'exécution du jeu. 
+   * Chaque itération correspond à un frame.
+   */
   while (run) {
+    std::cout << "Larry x1: " << larry->x1 << std::endl;
+    std::cout << "Larry x2: " << larry->x2 << std::endl;
+
+    if (ticks == 50) {
+      if (larry->goesLeft) {
+        if (larry->x1 - tetromino.blocWidth < 0) {
+          larry->goesLeft = !larry->goesLeft;
+        } else {
+          larry->x1 -= tetromino.blocWidth;
+          larry->x2 = larry->x1 + tetromino.blocWidth;
+        }
+      } else {
+        if (larry->x2 > render.width) {
+          larry->goesLeft = !larry->goesLeft;
+        } else {
+          larry->x1 += tetromino.blocWidth;
+          larry->x2 = larry->x1 + tetromino.blocWidth;
+        }
+      }
+      // On invoque la génération aléatoire de tetromino
+      tetromino.generateRandom(tetrominos, interlocks);
+      ticks = 0;
+    }
+
     render.clear(renderer);
-    int last = tetromino.lastIndex(tetrominos);
-    for (int i = 0; i < last; i++) {
+    int last = tetromino.lastIndex(tetrominos); // On récupère le dernier index utilisé dans le tableau contenant tout les tetrominos
+
+    for (int i = 0; i < last; i++) { // Boucle itérant sur chaque tetromino existant dans la partie
+
       collision.collide(tetrominos, i);
     }
+
     while (SDL_PollEvent(&e) != 0) {
       // Si l'utilisateur demande à fermer la fenêtre du jeu
       if (e.type == SDL_QUIT) {
@@ -90,6 +137,8 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
     tetromino.display(renderer, bloc, tetrominos, active, inactive);
     tetromino.fall(tetrominos);
     SDL_RenderPresent(renderer);
+
+    ticks++;
   }
 }
 
@@ -103,6 +152,7 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
  * @param renderer Rendu où le jeu est affiché
  * @param window Fenêtre où le rendu/le jeu se trouve
  * @param font Police d'écriture utilisé dans le jeu
+ *
  * @see main.cpp
  */
 void Engine::Run::close(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
