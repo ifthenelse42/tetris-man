@@ -71,8 +71,12 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   Game::Tetromino::compatible interlocks[Game::Tetromino::maxInterlock]; // On initialise la structure pointant vers les tetrominos imbricable avec le tetromino actuel
 
   // On rajoute un tetromino de type 1
-  tetromino.add(tetrominos, 225, 0, 4, 0);
-  tetromino.add(tetrominos, 225, 300, 2, 0);
+  tetromino.add(tetrominos, 275, -450, 5, 0);
+  tetromino.add(tetrominos, 225, -750, 1, 0);
+  tetromino.add(tetrominos, 200, -300, 2, 0);
+  tetromino.add(tetrominos, 150, -100, 3, 0);
+  tetromino.add(tetrominos, 75, -200, 4, 0);
+  tetromino.add(tetrominos, 0, -50, 2, 1);
 
   // Maintenant on fait apparaître un tetromino aléatoire s'imbricant avec le tetromino actuel
   SDL_Texture* bloc = texture.createBloc(renderer);
@@ -82,25 +86,10 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
    * Chaque itération correspond à un frame.
    */
   while (run) {
-    std::cout << "Larry x1: " << larry->x1 << std::endl;
-    std::cout << "Larry x2: " << larry->x2 << std::endl;
+    int lastIndex = tetromino.lastIndex(tetrominos); // On récupère le nombre maximum de tetromino dans la partie
 
-    if (ticks == 50) {
-      if (larry->goesLeft) {
-        if (larry->x1 - tetromino.blocWidth < 0) {
-          larry->goesLeft = !larry->goesLeft;
-        } else {
-          larry->x1 -= tetromino.blocWidth;
-          larry->x2 = larry->x1 + tetromino.blocWidth;
-        }
-      } else {
-        if (larry->x2 > render.width) {
-          larry->goesLeft = !larry->goesLeft;
-        } else {
-          larry->x1 += tetromino.blocWidth;
-          larry->x2 = larry->x1 + tetromino.blocWidth;
-        }
-      }
+    if (ticks == 5) {
+      tetromino.handleSpawn(tetrominos, larry);
       // On invoque la génération aléatoire de tetromino
       tetromino.generateRandom(tetrominos, interlocks);
       ticks = 0;
