@@ -81,11 +81,11 @@ bool Engine::Collision::tetrominoCollide(int actualX1, int actualY1, int actualX
  *
  * @see Engine::Collision::collide
  */
-bool Engine::Collision::screenCollide(int actualY2)
+bool Engine::Collision::screenCollide(int actualY2, int* width, int* height)
 {
   Engine::Render render;
 
-  return (actualY2 >= render.height);
+  return (actualY2 >= *height);
 }
 
 /**
@@ -101,22 +101,21 @@ bool Engine::Collision::screenCollide(int actualY2)
  * @see Engine::Collision::xCollide
  * @see Engine::Collision::yCollide
  */
-void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetrominoIndex)
+void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetrominoIndex, int* max, int* width, int* height)
 {
   Game::Tetromino tetromino;
-  int last = tetromino.lastIndex(tetrominos);
 
   // On fouille dans tous les tetrominos existant
-  for (int k = 0; k < last; k++) {
+  for (int k = 0; k < *max; k++) {
     int tetrominoActualx1 = tetrominos[tetrominoIndex].startX;
     int tetrominoActualy1 = tetrominos[tetrominoIndex].startY;
-    int tetrominoActualx2 = tetrominoActualx1 + (Game::Tetromino::blocWidth * Game::Tetromino::maxSize);
-    int tetrominoActualy2 = tetrominoActualy1 + (Game::Tetromino::blocHeight * Game::Tetromino::maxSize);
+    int tetrominoActualx2 = tetrominoActualx1 + (tetromino.blocWidth * tetromino.maxSize);
+    int tetrominoActualy2 = tetrominoActualy1 + (tetromino.blocHeight * tetromino.maxSize);
 
     int tetrominoAllx1 = tetrominos[k].startX;
     int tetrominoAlly1 = tetrominos[k].startY;
-    int tetrominoAllx2 = tetrominoAllx1 + (Game::Tetromino::blocWidth * Game::Tetromino::maxSize);
-    int tetrominoAlly2 = tetrominoAlly1 + (Game::Tetromino::blocHeight * Game::Tetromino::maxSize);
+    int tetrominoAllx2 = tetrominoAllx1 + (tetromino.blocWidth * tetromino.maxSize);
+    int tetrominoAlly2 = tetrominoAlly1 + (tetromino.blocHeight * tetromino.maxSize);
     /**
      * On compare le tetromino actuel avec tous les autres, donc dans cette boucle on ne compte pas le bloc actuel
      * Il doit y avoir collision entre les matrices des tetrominos pour commencer à comparer les blocs entre eux, pour les collisions
@@ -128,12 +127,12 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
         && (tetrominos[tetrominoIndex].move || tetrominos[k].move)) {
       // On voit si chaque startX/Y + les points de la matrice où un bloc est présent touche un autre
       // Si la coordonnée actuelle est un bloc - on le compare avec tous les autres blocs
-      for (int xActual = 0; xActual < Game::Tetromino::maxSize; xActual++) {
-        for (int yActual = 0; yActual < Game::Tetromino::maxSize; yActual++) {
+      for (int xActual = 0; xActual < tetromino.maxSize; xActual++) {
+        for (int yActual = 0; yActual < tetromino.maxSize; yActual++) {
           if (tetrominos[tetrominoIndex].coordinate[xActual][yActual] == 1) {
             // On récupère les coordonnées du bloc actuel
-            int x1BlocActual = tetrominos[tetrominoIndex].startX + (xActual * Game::Tetromino::blocWidth);
-            int y1BlocActual = tetrominos[tetrominoIndex].startY + (yActual * Game::Tetromino::blocHeight);
+            int x1BlocActual = tetrominos[tetrominoIndex].startX + (xActual * tetromino.blocWidth);
+            int y1BlocActual = tetrominos[tetrominoIndex].startY + (yActual * tetromino.blocHeight);
             int x2BlocActual = x1BlocActual + Game::Tetromino::blocWidth;
             int y2BlocActual = y1BlocActual + Game::Tetromino::blocHeight;
 
@@ -142,10 +141,10 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
               for (int yAll = 0; yAll < Game::Tetromino::maxSize; yAll++) {
                 if (tetrominos[k].coordinate[xAll][yAll] == 1) {
                   // On récupère les coordonnées de tous les autres blocs
-                  int x1BlocAll = tetrominos[k].startX + (xAll * Game::Tetromino::blocWidth);
-                  int y1BlocAll = tetrominos[k].startY + (yAll * Game::Tetromino::blocHeight);
-                  int x2BlocAll = x1BlocAll + Game::Tetromino::blocWidth;
-                  int y2BlocAll = y1BlocAll + Game::Tetromino::blocHeight;
+                  int x1BlocAll = tetrominos[k].startX + (xAll * tetromino.blocWidth);
+                  int y1BlocAll = tetrominos[k].startY + (yAll * tetromino.blocHeight);
+                  int x2BlocAll = x1BlocAll + tetromino.blocWidth;
+                  int y2BlocAll = y1BlocAll + tetromino.blocHeight;
 
                   // On compare les blocs du tetromino actuel avec tous les autres pour voir s'il y a collision
                   if (xCollide(x1BlocActual, x2BlocActual, x1BlocAll, x2BlocAll)
@@ -153,9 +152,6 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
 
                     // Si le bloc actuel touche un autre bloc, on le rend lui aussi immobile
                     tetrominos[tetrominoIndex].move = false;
-
-                    // L'autre bloc doit alors devenir zombie
-                    //tetrominos[k].zombie = true;
                   }
                 }
               }
@@ -176,7 +172,7 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
            * Si il touche bien le bord de l'écran, alors on le rend immobile
            * */
           if ((tetrominos[tetrominoIndex].coordinate[xActual][yActual] == 1)
-              && screenCollide(y2BlocActual)) {
+              && screenCollide(y2BlocActual, width, height)) {
             tetrominos[tetrominoIndex].move = false;
           }
         }

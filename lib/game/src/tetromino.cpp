@@ -1,39 +1,12 @@
 #include "SDL2/SDL.h"
 #include "engine/engine.hpp"
 #include "engine/collision.hpp"
-#include "game/tetromino.hpp"
-#include "engine/texture.hpp"
 #include "engine/render.hpp"
+#include "engine/texture.hpp"
 #include "game/game.hpp"
+#include "game/tetromino.hpp"
 #include <iostream>
 #include <math.h>
-
-/**
- * Fonction: Game::Tetromino::lastIndex
- * -------------------
- * Retrouve le dernier index réel du tableau contenant les tetrominos. 
- * Cela permet de limiter les itérations, le nombre maximum de tetromino dans la mémoire étant fixe.
- *
- * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
- *
- * @return Le dernier index réel
- *
- * @see Game::Tetromino
- */
-int Game::Tetromino::lastIndex(blocs* tetrominos)
-{
-  int last = 0;
-
-  // Si le type est défini à 0, ca veut dire que ca ne correspond à aucun tetromino
-  for (int i = 0; i < Tetromino::max; i++) {
-    if (tetrominos[i].type == 0) {
-      last = i;
-      break;
-    }
-  }
-
-  return last;
-}
 
 /**
  * Fonction: Game::Tetromino::fall
@@ -44,18 +17,11 @@ int Game::Tetromino::lastIndex(blocs* tetrominos)
  *
  * @see Game::Tetromino
  */
-void Game::Tetromino::fall(blocs* tetrominos)
+void Game::Tetromino::fall(blocs* tetrominos, int* max)
 {
-  Game::Tetromino tetromino;
-
-  int last = lastIndex(tetrominos);
-  for (int k = 0; k < last; k++) {
+  for (int k = 0; k < *max; k++) {
     if (tetrominos[k].move) {
-      if (tetrominos[k].startY + (tetromino.maxSize * tetromino.blocWidth) < 0) {
-      tetrominos[k].startY += 25;
-      } else {
-      tetrominos[k].startY += 1;
-      }
+      tetrominos[k].startY += 5;
     }
   }
 }
@@ -74,10 +40,9 @@ void Game::Tetromino::fall(blocs* tetrominos)
  *
  * @see Game::Tetromino
  */
-void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, int rotation)
+void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, int rotation, int* max)
 {
-  // On obtiens le dernier index des tetrominos
-  int last = lastIndex(tetrominos);
+  int last = *max; // On récupère le dernier index des tetrominos
 
   // On l'ajoute dans le tableau tetrominos en mémoire
   tetrominos[last].startX = startX;
@@ -135,6 +100,9 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
 
   // On applique la transposition (sera faite si nécessaire seulement)
   transpose(&tetrominos[last], rotation);
+
+  // Et on incrémente la variable max qui sert à donner le nombre maximum de tetromino.
+  (*max)++;
 }
 
 /**
@@ -143,19 +111,21 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
  * Fait apparaître dans le jeu un tetromino s'imbricant parfaitement avec le tetromino actuel. 
  * Il apparaît au dessus du bloc actuel.
  *
- * @param tetrominos Pointeur vers les tetrominos existant dans la partie
+ * @param tetrominos Copie mémoire du tableau pointant vers les tetrominos existant dans la partie. Afin d'éviter de faire tourner la boucle sur les nouveaux tetrominos.
  * @param interlocks Pointeur vers les tetrominos compatible avec le tetromino actuel
  *
  * @see Game::Tetromino::interlock
  * @see Game::Tetromino::add
  */
-void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetrominoActual, Game::Tetromino::compatible* interlocks)
+void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetrominoActual, Game::Tetromino::compatible* interlocks, int* max, int* height)
 {
   Game::Tetromino tetromino;
+  Engine::Collision collision;
+  Engine::Render render;
   int indexRand;
 
-  int i = 0;                              // Sert à suivre l'itération dans les tetrominos compatible
-  int indexMax = 0;                       // Correspond au dernier index où se trouve un tetromino compatible
+  int i = 0;        // Sert à suivre l'itération dans les tetrominos compatible
+  int indexMax = 0; // Correspond au dernier index où se trouve un tetromino compatible
 
   /**
    * On fait une boucle sur toute les imbrications possible du tetromino actuel, pour obtenir 
@@ -174,12 +144,49 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
   srand(time(NULL)); // Nécessaire pour la génération aléatoire
   indexRand = (rand() % (indexMax + 1) + 1) - 1;
 
-  int startX = tetrominos[tetrominoActual].startX + interlocks[indexRand].shiftX; // On déclare cette variable après avoir selectionné aléatoirement un interlock
-  int startY = tetromino.interlockStartY; // tout les tetrominos apparaissent hors écran
+  // On récupère les coordonnées du tetromino actuel
+  int spawnX1 = tetrominos[tetrominoActual].startX + interlocks[indexRand].shiftX;
+  int spawnX2 = spawnX1 + (tetromino.maxSize * tetromino.blocWidth * 2);
+  int spawnY1 = 0;
+  int spawnY2 = spawnY1 + (tetromino.maxSize * tetromino.blocHeight * 2);
+  bool canSpawn = true;
 
+  // TODO: arrêter de spawn un random pour tout les tetrominos entre eux et entre les nouveaux spawn
+  if (*max < 3) {
+    /**
+     * Le tetromino que l'on va faire apparaître ne doit pas toucher un autre qui vient d'apparaître.
+     */
+    for (int i = 0; i < *max; i++) {
+      if (i != tetrominoActual) {
+        // TODO CONTINUER LES COLLISIONS
+      int allX1 = tetrominos[i].startX;
+      int allX2 = allX1 + (tetromino.maxSize * tetromino.blocWidth);
+      int allY1 = tetrominos[i].startY;
+      int allY2 = allY1 + (tetromino.maxSize * tetromino.blocHeight);
+      std::cout << "spawnY1: " << spawnY1 << " - spawnX1: " << spawnX1 << std::endl;
+      std::cout << "spawnY2: " << spawnY2 << " - spawnX2: " << spawnX2 << std::endl;
 
-  // Enfin, le tetromino est inséré dans la mémoire
-  tetromino.add(tetrominos, startX, startY, interlocks[indexRand].type, interlocks[indexRand].rotation);
+      std::cout << "tetris " << i << std::endl;
+
+      std::cout << "allY1: " << allY1 << " - allX1: " << allX1 << std::endl;
+      std::cout << "allY2: " << allY2 << " - allX2: " << allX2 << std::endl;
+      std::cout << "test: " << allY1 + (tetromino.maxSize * tetromino.blocWidth) << std::endl;
+
+      // TODO - la collision des X entre eux n'est pas bonne, c'est ce qui empêche tout de fonctionner correctement! - égalemement pour Y, il suffit de corriger ca!
+      if (((spawnX2 > allX1 && allX2 > spawnX1) && (spawnY2 >= allY1 && allY2 >= spawnY1))) {
+        std::cout << "COLLISION" << std::endl;
+        canSpawn = false;
+        break;
+      }
+      }
+    }
+
+    if (canSpawn) {
+        std::cout << "SPAWN RANDOM - height: " << *height << std::endl;
+        tetromino.add(tetrominos, spawnX1, spawnY1, interlocks[indexRand].type, interlocks[indexRand].rotation, max);
+        tetrominos[tetrominoActual].zombie = true; // le tetromino deviens zombie seulement si un spawn a eu lieu.
+    }
+  }
 }
 
 /**
@@ -192,47 +199,17 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
  *
  * @return Le nombre de tetrominos tombant
  */
-unsigned int Game::Tetromino::fallingTetrominos(Game::Tetromino::blocs* tetrominos)
+unsigned int Game::Tetromino::fallingTetrominos(Game::Tetromino::blocs* tetrominos, int* max)
 {
-  Tetromino tetromino;
-
-  int max = tetromino.lastIndex(tetrominos);
   int amount = 0;
 
-  for (int i = 0; i < max; i++) {
+  for (int i = 0; i < *max; i++) {
     if (tetrominos[i].move) {
       amount++;
     }
   }
 
   return amount;
-}
-
-/**
- * Fonction: Game::Tetromino::generateRandom
- * ------------------------
- * Fait apparaître dans la partie des tetrominos aléatoirement pour remplir la zone de jeu. 
- * Le joueur doit donc éviter ces tetrominos le plus longtemps possible. 
- * Cette fonction est invoquée tout les x frames.
- *
- * @param tetrominos Pointeur vers les tetrominos existant dans la partie
- * @param interlocks Pointeur vers les tetrominos compatible avec le tetromino actuel
- *
- * @see Game::Tetromino::interlock
- * @see Game::Tetromino::add
- * @see Game::Tetromino::addRandom
- */
-void Game::Tetromino::generateRandom(Game::Tetromino::blocs* tetrominos, Game::Tetromino::compatible* interlocks)
-{
-  //TODO
-  Tetromino tetromino;
-
-  int amount = fallingTetrominos(tetrominos); // Nombre de tetrominos en train de tomber
-  int last = lastIndex(tetrominos);           // Dernier index où un tetromino est présent
-
-  //srand(time(NULL)); // Nécessaire pour la génération aléatoire
-  //indexRand = (rand() % (k + 1) + 1) - 1;
-  //tetromino.addRandom(tetrominos, tetrominosNotZombies[indexRand], interlocks);
 }
 
 /**
@@ -421,10 +398,6 @@ void Game::Tetromino::interlock(blocs tetrominos, compatible* interlocks, int in
       interlocks[0].shiftX = tetromino.blocWidth;
       interlocks[0].type = 1;
       interlocks[0].rotation = 2;
-
-      interlocks[1].shiftX = tetromino.blocWidth;
-      interlocks[1].type = 3;
-      interlocks[1].rotation = 0;
 
       break;
     case 1:
@@ -616,23 +589,22 @@ void Game::Tetromino::interlock(blocs tetrominos, compatible* interlocks, int in
  * @see Game::Tetromino::fall
  * @see Game::Run::loop
  */
-bool Game::Tetromino::spawnDetector(blocs* tetrominos, int index, Game::Tetromino::spawn* larry)
+void Game::Tetromino::spawnDetector(blocs* tetrominos, Game::Tetromino::spawn* larry, int* max, int* height)
 {
   Game::Tetromino tetromino;
 
-  bool res = false;
-
   /**
-   * On vérfie la collision sur les x seulement, puisque de toute manière un tetromino immobile sera forcément 
-   * en dessous du spawner.
+   * On vérifie ici les tetrominos non zombie et tombant, donc ceux qui tombent simplement. 
+   * Ca nous permet de faire une vérification sur les tetrominos qui viennent d'apparaître. 
    */
-    if (larry->x1 >= tetrominos[index].startX && larry->x2 <= tetrominos[index].startX + (tetromino.blocWidth * tetromino.maxSize)) {
-    if (!tetrominos[index].zombie && !tetrominos[index].move) {
-      res = true;
+  for (int i = 0; i < *max; i++) {
+    if (!tetrominos[i].zombie) {
+      compatible interlocks[tetromino.maxInterlock];
+      tetromino.interlock(tetrominos[i], interlocks, i);
+
+      tetromino.addRandom(tetrominos, i, interlocks, max, height);
     }
   }
-  
-  return res;
 }
 
 /**
@@ -680,11 +652,9 @@ void Game::Tetromino::moveSpawn(Game::Tetromino::spawn* larry)
  *
  * @see Game::Tetromino::spawn
  */
-void Game::Tetromino::handleSpawn(blocs* tetrominos, Game::Tetromino::spawn* larry)
+void Game::Tetromino::handleSpawn(blocs* tetrominos, Game::Tetromino::spawn* larry, int* max, int* height)
 {
   Game::Tetromino tetromino;
-
-  int last = tetromino.lastIndex(tetrominos);
 
   /**
    * On fait bouger de droite à gauche le spawn, 
@@ -692,21 +662,52 @@ void Game::Tetromino::handleSpawn(blocs* tetrominos, Game::Tetromino::spawn* lar
    * Si c'est le cas, on fait apparaître le tetromino.
    */
   tetromino.moveSpawn(larry);
+  tetromino.spawnDetector(tetrominos, larry, max, height);
+}
 
-  /**
-   * On fait une boucle dans tous les tetrominos présent dans la mémoire, 
-   * puis on regarde si la matrice est en dessous du spawner, sans vérifier les blocs. 
-   * S'il y en a un, immobile et non-zombie, on invoque addRandom et on le fait devenir zombie.
-   */
-  for (int i = 0; i < last; i++) {
-  if (tetromino.spawnDetector(tetrominos, i, larry)) {
-    compatible interlocks[tetromino.maxInterlock];
-    tetromino.interlock(tetrominos[i], interlocks, i);
-
-    tetrominos[i].zombie = true;
-    tetromino.addRandom(tetrominos, i, interlocks);
+/**
+ * Fonction: Game::Tetromino::moveAllUp
+ * ------------------------
+ * Cette fonction sert à bouger tous les tetrominos en mémoire vers le haut dans le rendu. Cela sert à simuler une camera. 
+ *
+ * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
+ * @param max Pointeur vers le nombre maximum de tetromino en mémoire.
+ */
+void Game::Tetromino::moveAllUp(blocs* tetrominos, int amount, int* max, int* height)
+{
+  for (int i = 0; i < *max; i++) {
+    (*height)++;
+    tetrominos[i].startY += amount;
   }
 }
+
+/**
+ * Fonction: Game::Tetromino::limit
+ * ------------------------
+ * Détecte si un tetromino parmis tous a atteint la limite supérieure de l'affichage. 
+ * Si oui, on monte la caméra. Le joueur doit être capable de monter, sinon il perd.
+ *
+ * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
+ * @param max Pointeur vers le nombre maximum de tetromino en mémoire.
+ */
+void Game::Tetromino::limit(blocs* tetrominos, int* max, int* height)
+{
+  Game::Tetromino tetromino;
+
+  bool push = false;
+  for (int i = 0; i < *max; i++) {
+    /**
+     * Le tetromino doit bientôt atteindre la bordure supérieure de l'affichage en étant immobile.
+     */
+    if (tetrominos[i].startY < 200 && !tetrominos[i].move) {
+      push = true;
+      break;
+    }
+  }
+
+  if (push) {
+    tetromino.moveAllUp(tetrominos, 2, max, height);
+  }
 }
 
 /**
@@ -721,16 +722,13 @@ void Game::Tetromino::handleSpawn(blocs* tetrominos, Game::Tetromino::spawn* lar
  *
  * @see Game::Tetromino
  */
-void Game::Tetromino::display(SDL_Renderer* renderer, SDL_Texture* bloc, blocs* tetrominos, SDL_Texture* active, SDL_Texture* inactive)
+void Game::Tetromino::display(SDL_Renderer* renderer, SDL_Texture* bloc, blocs* tetrominos, SDL_Texture* active, SDL_Texture* inactive, int* max)
 {
   Tetromino tetromino;
   Engine::Texture texture;
 
-  int last = tetromino.lastIndex(tetrominos);
-  std::cout << last << std::endl;
-
   // Pour chaque tetromino
-  for (int k = 0; k < last; k++) {
+  for (int k = 0; k < *max; k++) {
     // On fouille ses coordonnées, qui est une matrice 6x6
     // Si les coordonnées actuelle correspondent au début d'un tetromino
     // Alors on circule dedans pour construire le tetromino

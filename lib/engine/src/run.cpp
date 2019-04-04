@@ -47,8 +47,11 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   Engine::Collision collision;
   Game::Tetromino tetromino;
 
-  bool run = true;
-  int ticks = 0;
+  bool run = true; // Cette variable indique si le jeu est démarré ou non
+  int ticks = 0; // Cette variable est incrémenté à chaque itération de la boucle du jeu
+  int max = 0; // Variable contenant le nombre max de tetromino, qui est utilisé par plusieurs fonctions dans le code source
+  int width = render.width; // Largeur de la zone de jeu - manipulé par la caméra
+  int height = render.height; // Hauteur de la zone de jeu - manipulé par la caméra
 
   /**
    * On fait apparaître un spawner unique qui se déplace de gauche à 
@@ -59,6 +62,8 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   Game::Tetromino::spawn* larry = &spawner;
   larry->x1 = render.width - tetromino.blocWidth;
   larry->x2 = larry->x1 + tetromino.blocWidth;
+  larry->y1 = 50; // Variable négative car c'est au dessus de l'écran
+  larry->y2 = larry->y1 + (tetromino.maxSize * tetromino.blocHeight);
 
   // On génère un texte
   const char* activeText = "1";
@@ -68,15 +73,14 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
 
   SDL_Event e;
   Game::Tetromino::blocs tetrominos[Game::Tetromino::max];
-  Game::Tetromino::compatible interlocks[Game::Tetromino::maxInterlock]; // On initialise la structure pointant vers les tetrominos imbricable avec le tetromino actuel
 
   // On rajoute un tetromino de type 1
-  tetromino.add(tetrominos, 275, -450, 5, 0);
-  tetromino.add(tetrominos, 225, -750, 1, 0);
-  tetromino.add(tetrominos, 200, -300, 2, 0);
-  tetromino.add(tetrominos, 150, -100, 3, 0);
-  tetromino.add(tetrominos, 75, -200, 4, 0);
-  tetromino.add(tetrominos, 0, -50, 2, 1);
+  //tetromino.add(tetrominos, 275, -3900, 5, 0, &max);
+  //tetromino.add(tetrominos, 225, -2800, 1, 0, &max);
+  //tetromino.add(tetrominos, 200, -1800, 2, 0, &max);
+  tetromino.add(tetrominos, 150, -800, 3, 0, &max);
+  //tetromino.add(tetrominos, 75, -200, 4, 0, &max);
+  //tetromino.add(tetrominos, 0, 0, 2, 1, &max);
 
   // Maintenant on fait apparaître un tetromino aléatoire s'imbricant avec le tetromino actuel
   SDL_Texture* bloc = texture.createBloc(renderer);
@@ -86,21 +90,17 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
    * Chaque itération correspond à un frame.
    */
   while (run) {
-    int lastIndex = tetromino.lastIndex(tetrominos); // On récupère le nombre maximum de tetromino dans la partie
-
-    if (ticks == 5) {
-      tetromino.handleSpawn(tetrominos, larry);
-      // On invoque la génération aléatoire de tetromino
-      tetromino.generateRandom(tetrominos, interlocks);
+    if (ticks == 50) {
+      tetromino.handleSpawn(tetrominos, larry, &max, &height);
       ticks = 0;
     }
 
+    tetromino.limit(tetrominos, &max, &height);
+
     render.clear(renderer);
-    int last = tetromino.lastIndex(tetrominos); // On récupère le dernier index utilisé dans le tableau contenant tout les tetrominos
 
-    for (int i = 0; i < last; i++) { // Boucle itérant sur chaque tetromino existant dans la partie
-
-      collision.collide(tetrominos, i);
+    for (int i = 0; i < max; i++) { // Boucle itérant sur chaque tetromino existant dans la partie
+      collision.collide(tetrominos, i, &max, &width, &height);
     }
 
     while (SDL_PollEvent(&e) != 0) {
@@ -123,8 +123,8 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
       }
     }
 
-    tetromino.display(renderer, bloc, tetrominos, active, inactive);
-    tetromino.fall(tetrominos);
+    tetromino.display(renderer, bloc, tetrominos, active, inactive, &max);
+    tetromino.fall(tetrominos, &max);
     SDL_RenderPresent(renderer);
 
     ticks++;
