@@ -28,7 +28,7 @@ class Game::Tetromino {
     bool goesLeft = true;
   };
 
-  static const int max = 250;
+  static const int max = 1000;
   static const int maxInterlock = 6;
   static const int interlockStartY = 100;
   static const int maxBloc = 4;

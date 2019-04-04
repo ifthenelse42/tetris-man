@@ -21,7 +21,7 @@ void Game::Tetromino::fall(blocs* tetrominos, int* max)
 {
   for (int k = 0; k < *max; k++) {
     if (tetrominos[k].move) {
-      tetrominos[k].startY += 5;
+      tetrominos[k].startY += 2;
     }
   }
 }
@@ -146,43 +146,28 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
 
   // On récupère les coordonnées du tetromino actuel
   int spawnX1 = tetrominos[tetrominoActual].startX + interlocks[indexRand].shiftX;
-  int spawnX2 = spawnX1 + (tetromino.maxSize * tetromino.blocWidth * 2);
-  int spawnY1 = 0;
-  int spawnY2 = spawnY1 + (tetromino.maxSize * tetromino.blocHeight * 2);
+  int spawnX2 = spawnX1 + (tetromino.maxSize * tetromino.blocWidth);
+  int spawnY1 = -500;
+  int spawnY2 = spawnY1 + (tetromino.maxSize * tetromino.blocHeight);
   bool canSpawn = true;
 
-  // TODO: arrêter de spawn un random pour tout les tetrominos entre eux et entre les nouveaux spawn
-  if (*max < 3) {
+  if (*max < tetromino.max) {
     /**
      * Le tetromino que l'on va faire apparaître ne doit pas toucher un autre qui vient d'apparaître.
      */
     for (int i = 0; i < *max; i++) {
-      if (i != tetrominoActual) {
-        // TODO CONTINUER LES COLLISIONS
       int allX1 = tetrominos[i].startX;
       int allX2 = allX1 + (tetromino.maxSize * tetromino.blocWidth);
       int allY1 = tetrominos[i].startY;
       int allY2 = allY1 + (tetromino.maxSize * tetromino.blocHeight);
-      std::cout << "spawnY1: " << spawnY1 << " - spawnX1: " << spawnX1 << std::endl;
-      std::cout << "spawnY2: " << spawnY2 << " - spawnX2: " << spawnX2 << std::endl;
 
-      std::cout << "tetris " << i << std::endl;
-
-      std::cout << "allY1: " << allY1 << " - allX1: " << allX1 << std::endl;
-      std::cout << "allY2: " << allY2 << " - allX2: " << allX2 << std::endl;
-      std::cout << "test: " << allY1 + (tetromino.maxSize * tetromino.blocWidth) << std::endl;
-
-      // TODO - la collision des X entre eux n'est pas bonne, c'est ce qui empêche tout de fonctionner correctement! - égalemement pour Y, il suffit de corriger ca!
-      if (((spawnX2 > allX1 && allX2 > spawnX1) && (spawnY2 >= allY1 && allY2 >= spawnY1))) {
-        std::cout << "COLLISION" << std::endl;
+      if (((spawnX2 >= allX1 && allX2 >= spawnX1) && (spawnY2 >= allY1 && allY2 >= spawnY1))) {
         canSpawn = false;
         break;
-      }
       }
     }
 
     if (canSpawn) {
-        std::cout << "SPAWN RANDOM - height: " << *height << std::endl;
         tetromino.add(tetrominos, spawnX1, spawnY1, interlocks[indexRand].type, interlocks[indexRand].rotation, max);
         tetrominos[tetrominoActual].zombie = true; // le tetromino deviens zombie seulement si un spawn a eu lieu.
     }
@@ -598,7 +583,7 @@ void Game::Tetromino::spawnDetector(blocs* tetrominos, Game::Tetromino::spawn* l
    * Ca nous permet de faire une vérification sur les tetrominos qui viennent d'apparaître. 
    */
   for (int i = 0; i < *max; i++) {
-    if (!tetrominos[i].zombie) {
+    if (!tetrominos[i].zombie && tetrominos[i].startY >= 0) {
       compatible interlocks[tetromino.maxInterlock];
       tetromino.interlock(tetrominos[i], interlocks, i);
 
@@ -699,7 +684,7 @@ void Game::Tetromino::limit(blocs* tetrominos, int* max, int* height)
     /**
      * Le tetromino doit bientôt atteindre la bordure supérieure de l'affichage en étant immobile.
      */
-    if (tetrominos[i].startY < 200 && !tetrominos[i].move) {
+    if (tetrominos[i].startY < 400 && !tetrominos[i].move) {
       push = true;
       break;
     }

@@ -75,12 +75,12 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   Game::Tetromino::blocs tetrominos[Game::Tetromino::max];
 
   // On rajoute un tetromino de type 1
-  //tetromino.add(tetrominos, 275, -3900, 5, 0, &max);
-  //tetromino.add(tetrominos, 225, -2800, 1, 0, &max);
-  //tetromino.add(tetrominos, 200, -1800, 2, 0, &max);
-  tetromino.add(tetrominos, 150, -800, 3, 0, &max);
-  //tetromino.add(tetrominos, 75, -200, 4, 0, &max);
-  //tetromino.add(tetrominos, 0, 0, 2, 1, &max);
+  tetromino.add(tetrominos, 275, -1000, 5, 0, &max);
+  tetromino.add(tetrominos, 225, -800, 1, 0, &max);
+  tetromino.add(tetrominos, 200, -600, 2, 0, &max);
+  tetromino.add(tetrominos, 150, -400, 3, 0, &max);
+  tetromino.add(tetrominos, 75, -200, 4, 0, &max);
+  tetromino.add(tetrominos, 0, 0, 2, 1, &max);
 
   // Maintenant on fait apparaître un tetromino aléatoire s'imbricant avec le tetromino actuel
   SDL_Texture* bloc = texture.createBloc(renderer);
@@ -90,7 +90,7 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
    * Chaque itération correspond à un frame.
    */
   while (run) {
-    if (ticks == 50) {
+    if (ticks == 10) {
       tetromino.handleSpawn(tetrominos, larry, &max, &height);
       ticks = 0;
     }
