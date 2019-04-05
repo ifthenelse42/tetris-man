@@ -91,7 +91,8 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
 
     tetromino.limit(tetrominos, &max, &height);
     tetromino.clean(tetrominos, &max, &height);
-    std::cout << "Height: " << height << std::endl;
+    //std::cout << "Height: " << height << std::endl;
+    //std::cout << "Max: " << max << std::endl;
 
     render.clear(renderer);
 
