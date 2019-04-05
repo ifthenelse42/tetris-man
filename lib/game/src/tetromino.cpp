@@ -21,7 +21,7 @@ void Game::Tetromino::fall(blocs* tetrominos, int* max)
 {
   for (int k = 0; k < *max; k++) {
     if (tetrominos[k].move) {
-      tetrominos[k].startY += 2;
+      tetrominos[k].startY += 5;
     }
   }
 }
@@ -147,7 +147,7 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
   // On récupère les coordonnées du tetromino actuel
   int spawnX1 = tetrominos[tetrominoActual].startX + interlocks[indexRand].shiftX;
   int spawnX2 = spawnX1 + (tetromino.maxSize * tetromino.blocWidth);
-  int spawnY1 = -500;
+  int spawnY1 = -400;
   int spawnY2 = spawnY1 + (tetromino.maxSize * tetromino.blocHeight);
   bool canSpawn = true;
 
@@ -568,14 +568,14 @@ void Game::Tetromino::interlock(blocs tetrominos, compatible* interlocks, int in
  * pour définir la difficulté du jeu.
  *
  * @param tetrominos Pointeur vers le tableau contenant tous les tetrominos dans la partie
- * @param larry Spawner de tetromino
  *
  * @see Game::Tetromino::handleSpawn
  * @see Game::Tetromino::fall
  * @see Game::Run::loop
  */
-void Game::Tetromino::spawnDetector(blocs* tetrominos, Game::Tetromino::spawn* larry, int* max, int* height)
+void Game::Tetromino::spawnDetector(blocs* tetrominos, int* max, int* height)
 {
+  Engine::Collision collision;
   Game::Tetromino tetromino;
 
   /**
@@ -583,6 +583,16 @@ void Game::Tetromino::spawnDetector(blocs* tetrominos, Game::Tetromino::spawn* l
    * Ca nous permet de faire une vérification sur les tetrominos qui viennent d'apparaître. 
    */
   for (int i = 0; i < *max; i++) {
+    int allX1 = tetrominos[i].startX;
+    int allX2 = allX1 + (tetromino.maxSize * tetromino.blocWidth);
+    int allY1 = tetrominos[i].startY;
+    int allY2 = allY1 + (tetromino.maxSize * tetromino.blocHeight);
+
+      //bool Engine::Collision::xCollide(int actualX1, int actualX2, int allX1, int allX2)
+    /**
+     * On vérifie si le tetromino actuel n'est pas zombie, dans l'affichage, et si 
+     * le spawner entre en collision avec lui. Si oui, on peut ajouter le tetromino.
+     */
     if (!tetrominos[i].zombie && tetrominos[i].startY >= 0) {
       compatible interlocks[tetromino.maxInterlock];
       tetromino.interlock(tetrominos[i], interlocks, i);
@@ -593,51 +603,15 @@ void Game::Tetromino::spawnDetector(blocs* tetrominos, Game::Tetromino::spawn* l
 }
 
 /**
- * Fonction: Game::Tetromino::moveSpawn
- * ------------------------
- * Fait bouger de gauche à droite le spawner.
- *
- * @param larry Spawner de tetromino
- *
- * @see Game::Tetromino::handleSpawn
- */
-void Game::Tetromino::moveSpawn(Game::Tetromino::spawn* larry)
-{
-  Game::Tetromino tetromino;
-  Engine::Render render;
-
-  /**
-   * Si le x1 du spawner va en dessous de 0, on change de sens. 
-   * Si le x2 du spawner va au dessus de render.width, on change de sens.
-   */
-  if (larry->goesLeft) {
-    if (larry->x1 - tetromino.blocWidth < 0) {
-      larry->goesLeft = !larry->goesLeft;
-    } else {
-      larry->x1 -= tetromino.blocWidth;
-      larry->x2 = larry->x1 + tetromino.blocWidth;
-    }
-  } else {
-    if (larry->x2 > render.width) {
-      larry->goesLeft = !larry->goesLeft;
-    } else {
-      larry->x1 += tetromino.blocWidth;
-      larry->x2 = larry->x1 + tetromino.blocWidth;
-    }
-  }
-}
-
-/**
  * Fonction: Game::Tetromino::handleSpawn
  * ------------------------
  * Gère le spawner de tetrominos.
  *
  * @param tetrominos Pointeur vers le tableau contenant tous les tetrominos dans la partie
- * @param larry Spawner de tetromino
  *
  * @see Game::Tetromino::spawn
  */
-void Game::Tetromino::handleSpawn(blocs* tetrominos, Game::Tetromino::spawn* larry, int* max, int* height)
+void Game::Tetromino::handleSpawn(blocs* tetrominos, int* max, int* height)
 {
   Game::Tetromino tetromino;
 
@@ -646,8 +620,7 @@ void Game::Tetromino::handleSpawn(blocs* tetrominos, Game::Tetromino::spawn* lar
    * puis on vérifie si un tetromino peut apparaître à l'emplacement où il se trouve. 
    * Si c'est le cas, on fait apparaître le tetromino.
    */
-  tetromino.moveSpawn(larry);
-  tetromino.spawnDetector(tetrominos, larry, max, height);
+  tetromino.spawnDetector(tetrominos, max, height);
 }
 
 /**
@@ -695,6 +668,37 @@ void Game::Tetromino::limit(blocs* tetrominos, int* max, int* height)
   }
 }
 
+/**
+ * Fonction: Game::Tetromino::clean
+ * ------------------------
+ * Détecte si un tetromino est maintenant en dehors de l'affichage, donc qu'il est temps de l'effacer de la mémoire.
+ *
+ * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
+ * @param max Pointeur vers le nombre maximum de tetromino en mémoire.
+ * @param height Pointeur vers la hauteur de l'affichage
+ */
+void Game::Tetromino::clean(blocs* tetrominos, int* max, int* height)
+{
+  // TODO: continuer cette fonction, elle est essentielle pour garder les performances pendant la durée du jeu. Trouver comment nettoyer de la mémoire efficacement un tetromino.
+  Engine::Render render;
+
+  /**
+   * On fait une boucle sur tous les tetrominos existant. Si le startY est supérieur à la hauteur de l'affichage, 
+   * on remplace tout son contenu par les valeurs par défaut, qui feront donc que le tetromino n'existera plus.
+   */
+  for (int i = 0; i < *max; i++) {
+    if (tetrominos[i].startY - 200 > render.height) {
+      std::cout << "cleaned tetromino " << i << std::endl;
+      //tetrominos[i].startY = 0;
+      //tetrominos[i].startX = 0;
+      //tetrominos[i].type = 0;
+      //tetrominos[i].rotation = 0;
+      //tetrominos[i].move = false;
+      //tetrominos[i].zombie = false;
+      tetrominos[i].coordinate = { { 0, 0, 0, 0}, {0, 0, 0, 0} };
+    }
+  }
+}
 /**
  * Fonction: Game::Tetromino::display
  * ------------------------

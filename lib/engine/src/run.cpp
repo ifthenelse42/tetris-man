@@ -58,12 +58,6 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
    * droite pour faire apparaître de nouveaux blocs dans la partie. 
    * Ces nouveaux blocs viendront s'imbriquer parfaitement dans la partie.
    */
-  Game::Tetromino::spawn spawner;
-  Game::Tetromino::spawn* larry = &spawner;
-  larry->x1 = render.width - tetromino.blocWidth;
-  larry->x2 = larry->x1 + tetromino.blocWidth;
-  larry->y1 = 50; // Variable négative car c'est au dessus de l'écran
-  larry->y2 = larry->y1 + (tetromino.maxSize * tetromino.blocHeight);
 
   // On génère un texte
   const char* activeText = "1";
@@ -76,9 +70,9 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
 
   // On rajoute un tetromino de type 1
   tetromino.add(tetrominos, 275, -1000, 5, 0, &max);
-  tetromino.add(tetrominos, 225, -800, 1, 0, &max);
-  tetromino.add(tetrominos, 200, -600, 2, 0, &max);
-  tetromino.add(tetrominos, 150, -400, 3, 0, &max);
+  //tetromino.add(tetrominos, 225, -800, 1, 0, &max);
+  //tetromino.add(tetrominos, 200, -600, 2, 0, &max);
+  //tetromino.add(tetrominos, 150, -400, 3, 0, &max);
   tetromino.add(tetrominos, 75, -200, 4, 0, &max);
   tetromino.add(tetrominos, 0, 0, 2, 1, &max);
 
@@ -90,12 +84,14 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
    * Chaque itération correspond à un frame.
    */
   while (run) {
-    if (ticks == 10) {
-      tetromino.handleSpawn(tetrominos, larry, &max, &height);
+    if (ticks == 5) {
+      tetromino.handleSpawn(tetrominos, &max, &height);
       ticks = 0;
     }
 
     tetromino.limit(tetrominos, &max, &height);
+    tetromino.clean(tetrominos, &max, &height);
+    std::cout << "Height: " << height << std::endl;
 
     render.clear(renderer);
 

@@ -19,14 +19,6 @@ class Game::Tetromino {
     int type = { 0 };
     int rotation = { 0 };
   };
-  struct spawn {
-    int x1;
-    int x2;
-    int y1;
-    int y2;
-
-    bool goesLeft = true;
-  };
 
   static const int max = 1000;
   static const int maxInterlock = 6;
@@ -46,10 +38,10 @@ class Game::Tetromino {
   void shift(blocs* bloc, int rotation);
   void transpose(blocs* tetromino, int rotation);
   void interlock(blocs tetrominos, compatible* interlocks, int index);
-  void spawnDetector(blocs* tetrominos, spawn* larry, int* max, int* height);
-  void moveSpawn(spawn* larry);
-  void handleSpawn(blocs* tetrominos, spawn* larry, int* max, int* height);
+  void spawnDetector(blocs* tetrominos, int* max, int* height);
+  void handleSpawn(blocs* tetrominos, int* max, int* height);
   void moveAllUp(blocs* tetrominos, int amount, int* max, int* height);
   void limit(blocs* tetrominos, int* max, int* height);
+  void clean(blocs* tetrominos, int* max, int* height);
   void display(SDL_Renderer* renderer, SDL_Texture* bloc, struct blocs* blocs, SDL_Texture* active, SDL_Texture* inactive, int* max);
 };
