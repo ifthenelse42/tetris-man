@@ -102,9 +102,6 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
 
   // On applique la transposition (sera faite si nécessaire seulement)
   transpose(&tetrominos[last], rotation);
-
-  // Et on incrémente la variable max qui sert à donner le nombre maximum de tetromino.
-  (*max)++;
 }
 
 /**
@@ -684,24 +681,32 @@ void Game::Tetromino::clean(blocs* tetrominos, int* max, int* height)
 {
   // TODO: continuer cette fonction, elle est essentielle pour garder les performances pendant la durée du jeu. Trouver comment nettoyer de la mémoire efficacement un tetromino.
   Engine::Render render;
+  int setMax = 0;
 
   /**
    * On fait une boucle sur tous les tetrominos existant. Si le startY est supérieur à la hauteur de l'affichage, 
    * on remplace tout son contenu par les valeurs par défaut, qui feront donc que le tetromino n'existera plus.
    */
   for (int i = 0; i < *max; i++) {
+    if (tetrominos[i].type != 0) {
+      setMax++;
+    }
     if (tetrominos[i].startY - 200 > render.height) {
       std::cout << "cleaned tetromino " << i << std::endl;
       //tetrominos[i].startY = 0;
       //tetrominos[i].startX = 0;
-      //tetrominos[i].type = 0;
-      //tetrominos[i].rotation = 0;
+      tetrominos[i].type = 0;
+      tetrominos[i].rotation = 0;
       //tetrominos[i].move = false;
       //tetrominos[i].zombie = false;
       tetrominos[i].coordinate = { { 0, 0, 0, 0}, {0, 0, 0, 0} };
     }
   }
+
+  std::cout << setMax << std::endl;
+  *max = setMax;
 }
+
 /**
  * Fonction: Game::Tetromino::display
  * ------------------------

@@ -55,8 +55,6 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
 
   SDL_Surface* imagePersonnage = IMG_Load("assets/image/perso.png");
   SDL_Texture* textu = SDL_CreateTextureFromSurface(renderer, imagePersonnage);
-  
-  //SDL_Texture* personnage = texture.createFromImage(renderer, imagePersonnage);
 
   /**
    * On fait apparaître un spawner unique qui se déplace de gauche à 
@@ -114,8 +112,6 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
     }
 
     tetromino.limit(tetrominos, &max, &height);
-    //tetromino.clean(tetrominos, &max, &height);
-    std::cout << "Height: " << height << std::endl;
 
     render.clear(renderer);
     texture.displayText(renderer, textu, 100, 100);
