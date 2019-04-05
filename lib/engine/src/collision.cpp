@@ -81,7 +81,7 @@ bool Engine::Collision::tetrominoCollide(int actualX1, int actualY1, int actualX
  *
  * @see Engine::Collision::collide
  */
-bool Engine::Collision::screenCollide(int actualY2, int* width, int* height)
+bool Engine::Collision::screenCollide(int actualY2, int* height)
 {
   Engine::Render render;
 
@@ -101,7 +101,7 @@ bool Engine::Collision::screenCollide(int actualY2, int* width, int* height)
  * @see Engine::Collision::xCollide
  * @see Engine::Collision::yCollide
  */
-void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetrominoIndex, int* max, int* width, int* height)
+void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetrominoIndex, int* max, int* height)
 {
   Game::Tetromino tetromino;
 
@@ -172,7 +172,7 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
            * Si il touche bien le bord de l'écran, alors on le rend immobile
            * */
           if ((tetrominos[tetrominoIndex].coordinate[xActual][yActual] == 1)
-              && screenCollide(y2BlocActual, width, height)) {
+              && screenCollide(y2BlocActual, height)) {
             tetrominos[tetrominoIndex].move = false;
           }
         }

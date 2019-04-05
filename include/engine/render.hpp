@@ -2,7 +2,7 @@
 
 class Engine::Render {
   public:
-  static const int width = 350;
+  static const int width = 725;
   static const int height = 680;
 
   SDL_Window* createWindow();

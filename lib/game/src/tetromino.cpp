@@ -42,6 +42,8 @@ void Game::Tetromino::fall(blocs* tetrominos, int* max)
  */
 void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, int rotation, int* max)
 {
+  Engine::Render render;
+  Game::Tetromino tetromino;
   int last = *max; // On récupère le dernier index des tetrominos
 
   // On l'ajoute dans le tableau tetrominos en mémoire
@@ -147,9 +149,10 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
   // On récupère les coordonnées du tetromino actuel
   int spawnX1 = tetrominos[tetrominoActual].startX + interlocks[indexRand].shiftX;
   int spawnX2 = spawnX1 + (tetromino.maxSize * tetromino.blocWidth);
-  int spawnY1 = -400;
+  int spawnY1 = -((rand() % (1000 + 25) + 25) + 25);
   int spawnY2 = spawnY1 + (tetromino.maxSize * tetromino.blocHeight);
   bool canSpawn = true;
+  std::cout << spawnY1 << std::endl;
 
   if (*max < tetromino.max) {
     /**
@@ -582,7 +585,7 @@ void Game::Tetromino::spawnDetector(blocs* tetrominos, int* max, int* height)
    * On vérifie ici les tetrominos non zombie et tombant, donc ceux qui tombent simplement. 
    * Ca nous permet de faire une vérification sur les tetrominos qui viennent d'apparaître. 
    */
-  for (int i = 0; i < *max; i++) {
+  for (int i = 5; i < *max; i++) {
     int allX1 = tetrominos[i].startX;
     int allX2 = allX1 + (tetromino.maxSize * tetromino.blocWidth);
     int allY1 = tetrominos[i].startY;

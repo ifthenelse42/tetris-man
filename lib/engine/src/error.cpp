@@ -42,6 +42,25 @@ int Engine::Error::initTTF()
 }
 
 /**
+ * Fonction: Engine::Error::initIMG
+ * -------------------
+ * Vérifie si il y a une erreur dans l'initialisation du module IMG de SDL, et renvoie 0 ou 1 en fonction.
+ *
+ * @return -1 s'il y a une erreur dans l'initialisation du module IMG de SDL, sinon 1
+ *
+ * @see main.cpp
+ */
+int Engine::Error::initIMG()
+{
+  if (TTF_Init() < 0) {
+    printf("IMG_Init: %s\n", TTF_GetError());
+    return EXIT_FAILURE;
+  }
+
+  return 0;
+}
+
+/**
  * Fonction: Engine::Error::rendererAndWindow
  * -------------------
  * Vérifie si le rendu et la fenêtre ont bien été créés.

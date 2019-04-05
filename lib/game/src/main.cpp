@@ -34,6 +34,7 @@ int main(int argc, char **argv)
   render.clear(renderer);
 
   error.initTTF();
+  error.initIMG();
   TTF_Font* verdana = TTF_OpenFont("assets/fonts/verdana.ttf", 14);
   error.fontLoad(verdana);
 

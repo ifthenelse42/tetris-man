@@ -177,6 +177,6 @@ void Engine::Texture::displayText(SDL_Renderer* renderer, SDL_Texture* texture, 
   int height = 0;
 
   SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-  SDL_Rect position = { x, y, width, height };
+  SDL_Rect position = { x, y, width - 50, height - 75 };
   SDL_RenderCopy(renderer, texture, NULL, &position);
 }

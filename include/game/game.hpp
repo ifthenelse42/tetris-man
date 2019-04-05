@@ -6,4 +6,5 @@
 class Game {
   public:
   class Tetromino;
+  class Character;
 };
