@@ -4,5 +4,5 @@
 
 class Game::Input {
   public:
-    void handle(Game::Tetromino::blocs* tetrominos, int* max, SDL_Event* event, Game::Character::position* position, bool* left, bool* right, bool* run);
+    void handle(Game::Tetromino::blocs* tetrominos, int* max, SDL_Event* event, Game::Character::position* position, bool* left, bool* right, bool* jump, bool* run);
 };

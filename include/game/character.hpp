@@ -22,4 +22,5 @@ class Game::Character {
     void moveLeft(position* personnage);
     void moveRight(position* personnage);
     void moveUp(position* personnage);
+    void allUp(position* personnage, int amount);
 };

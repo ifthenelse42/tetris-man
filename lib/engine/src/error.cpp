@@ -1,5 +1,6 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
+#include "SDL2/SDL_mixer.h"
 #include "engine/engine.hpp"
 #include "engine/error.hpp"
 
@@ -14,7 +15,7 @@
  */
 int Engine::Error::initSDL()
 {
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
     printf("Erreur détecté lors de l'initialisation de SDL: %s", SDL_GetError());
     return EXIT_FAILURE;
   }
@@ -35,6 +36,26 @@ int Engine::Error::initTTF()
 {
   if (TTF_Init() < 0) {
     printf("TTF_Init: %s\n", TTF_GetError());
+    return EXIT_FAILURE;
+  }
+
+  return 0;
+}
+
+/**
+ * Fonction: Engine::Error::initMixer
+ * -------------------
+ * Vérifie si il y a une erreur dans l'initialisation du mixer de SDL2.
+ *
+ * @return -1 s'il y a une erreur dans l'initialisation du module TTF de SDL, sinon 1
+ *
+ * @see main.cpp
+ */
+int Engine::Error::initMixer()
+{
+	Mix_Init(MIX_INIT_MP3);
+  if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+    printf("Erreur détecté lors de l'initialisation de SDL_mixer: %s\n", Mix_GetError());
     return EXIT_FAILURE;
   }
 
@@ -99,6 +120,24 @@ int Engine::Error::textureLoad(SDL_Texture* texture)
     return EXIT_FAILURE;
   }
 
+  return 0;
+}
+
+/**
+ * Fonction: Engine::Error::textureLoad
+ * -------------------
+ * Vérifie si le chargement de la texture donnée s'est déroulée avec succès.
+ *
+ * @return -1 s'il y a une erreur dans le chargement de la texture, 1 sinon
+ *
+ * @see Engine::Texture
+ */
+int Engine::Error::musicLoad(Mix_Music* music)
+{
+  if (!music) {
+    printf("Erreur détecté lors du chargement de la musique: %s\n", Mix_GetError());
+  }
+  
   return 0;
 }
 

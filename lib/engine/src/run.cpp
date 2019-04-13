@@ -1,6 +1,7 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"
 #include "SDL2/SDL_image.h"
+#include "SDL2/SDL_mixer.h"
 #include "engine/engine.hpp"
 #include "engine/collision.hpp"
 #include "engine/error.hpp"
@@ -55,12 +56,18 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
 
   bool left = false; // Variable activant le mouvement vers la gauche
   bool right = false; // Variable activant le mouvement vers la droite
+  bool jump = false; // Variable activant le saut
   bool run = true; // Cette variable indique si le jeu est démarré ou non
   int ticks = 0; // Cette variable est incrémenté à chaque itération de la boucle du jeu
   int max = 0; // Variable contenant le nombre max de tetromino, qui est utilisé par plusieurs fonctions dans le code source
+  int speed = 3; // Variable contenant la vitesse de chute des tetrominos
   int height = render.height; // Hauteur de la zone de jeu - manipulé par la caméra
   Game::Character::position position; // On initialise la position du personnage
   SDL_Texture* personnage = character.create(renderer, IMG_Load("assets/image/perso.png"), &position); // On créé le personnage joué par le joueur
+  Mix_Music* ambiance = Mix_LoadMUS("assets/music/tetris-d.m4a"); // On charge la musique d'ambiance
+  if (Mix_PlayMusic(ambiance, 1) == -1) {
+    printf("Mix_PlayMusic: %s\n", Mix_GetError());
+  }
 
   // On génère un texte
   const char* activeText = "1";
@@ -82,22 +89,22 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   //tetromino.add(tetrominos, 100, -200, 3, 0, &max);
   //tetromino.add(tetrominos, 50, -200, 3, 0, &max);
   //tetromino.add(tetrominos, 0, -200, 3, 0, &max);
-  tetromino.add(tetrominos, 125, height - 50, 2, 1, &max);
-  tetromino.add(tetrominos, 225, height - 50, 2, 1, &max);
-  tetromino.add(tetrominos, 325, height - 50, 2, 1, &max);
-  tetromino.add(tetrominos, 425, height - 50, 2, 1, &max);
-  tetromino.add(tetrominos, 525, height - 50, 2, 1, &max);
+  tetromino.add(tetrominos, 125, height - 50, 2, 1, &speed, &max);
+  tetromino.add(tetrominos, 225, height - 50, 2, 1, &speed, &max);
+  tetromino.add(tetrominos, 325, height - 50, 2, 1, &speed, &max);
+  tetromino.add(tetrominos, 425, height - 50, 2, 1, &speed, &max);
+  tetromino.add(tetrominos, 525, height - 50, 2, 1, &speed, &max);
 
-  tetromino.add(tetrominos, 100, -600, 3, 0, &max);
-  tetromino.add(tetrominos, 150, -1400, 3, 0, &max);
-  tetromino.add(tetrominos, 200, -2600, 3, 0, &max);
-  tetromino.add(tetrominos, 250, -3400, 3, 0, &max);
-  tetromino.add(tetrominos, 300, -1900, 3, 0, &max);
-  tetromino.add(tetrominos, 350, -400, 3, 0, &max);
-  tetromino.add(tetrominos, 400, -100, 3, 0, &max);
-  tetromino.add(tetrominos, 450, -200, 3, 0, &max);
-  tetromino.add(tetrominos, 500, -800, 3, 0, &max);
-  tetromino.add(tetrominos, 550, -900, 3, 0, &max);
+  tetromino.add(tetrominos, 100, -600, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 150, -1400, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 200, -2600, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 250, -3400, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 300, -1900, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 350, -400, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 400, -100, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 450, -100, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 500, -800, 3, 0, &speed, &max);
+  tetromino.add(tetrominos, 550, -900, 3, 0, &speed, &max);
 
   // Maintenant on fait apparaître un tetromino aléatoire s'imbricant avec le tetromino actuel
   SDL_Texture* bloc = texture.createBloc(renderer);
@@ -107,8 +114,11 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
    * Chaque itération correspond à un frame.
    */
   while (run) {
+    //std::cout << "tetromino 5 y2 : " << tetrominos[5].startY + (2 * tetromino.blocWidth) << std::endl;
+    //std::cout << "position y1 : " << position.y << std::endl;
+
     if (ticks == 10) {
-      tetromino.handleSpawn(tetrominos, &max, &height);
+      tetromino.handleSpawn(tetrominos, &speed, &max, &height);
       ticks = 0;
     }
 
@@ -119,7 +129,7 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
     /**
      * Invocation des fonctions affectant les entrées de l'utilisateur.
      */
-    input.handle(tetrominos, &max, &event, &position, &left, &right, &run);
+    input.handle(tetrominos, &max, &event, &position, &left, &right, &jump, &run);
 
     /**
      * Invocation des fonctions affectant les tetrominos.
@@ -127,7 +137,19 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
     for (int i = 0; i < max; i++) { // Boucle itérant sur chaque tetromino existant dans la partie
       collision.collide(tetrominos, i, &max, &height);
     }
-    tetromino.limit(tetrominos, &max, &height);
+
+    /**
+     * Si un des tetrominos touche la limite d'affichage de l'écran, 
+     * on descend tous les tetrominos et le personnage 
+     * pour simuler une caméra ascendante.
+     */
+    if (tetromino.limit(tetrominos, &max)) {
+      int amount = 2; // On monte de x pixel les tetrominos et le personnage
+
+      tetromino.moveAllUp(tetrominos, amount, &max, &height);
+      character.allUp(&position, amount);
+    }
+
     tetromino.display(renderer, bloc, tetrominos, active, inactive, &max);
     tetromino.fall(tetrominos, &max);
 
@@ -138,22 +160,14 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
     character.handleVelocity(tetrominos, &max, &position, &run);
     character.movement(&position);
 
-    //std::cout << "VelocityX : " << position.velocityX << std::endl;
-    //std::cout << "VelocityY : " << position.velocityY << std::endl;
-    //std::cout << "height : " << height << std::endl;
-    std::cout << "posY1 : " << position.y << std::endl;
-    std::cout << "posY2 : " << position.y + position.height << std::endl;
-    std::cout << "velocityX : " << position.velocityX << std::endl;
-    std::cout << "velocityY : " << position.velocityY << std::endl;
-
-    std::cout << "Tetromino 5 - Y1 : " << tetrominos[5].startY << " - Y2 : " << tetrominos[5].startY + (tetromino.maxBloc * tetromino.maxSize) << std::endl; 
-    std::cout << "Tetromino 6 - Y1 : " << tetrominos[6].startY << " - Y2 : " << tetrominos[6].startY + (tetromino.maxBloc * tetromino.maxSize) << std::endl; 
-
     // Rafraichissement de l'affichage
     SDL_RenderPresent(renderer);
 
     ticks++;
   }
+
+  Mix_FreeMusic(ambiance);
+  ambiance = NULL;
 }
 
 /**
@@ -175,5 +189,6 @@ void Engine::Run::close(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fo
   SDL_DestroyWindow(window);
   TTF_CloseFont(font);
   TTF_Quit();
+  Mix_CloseAudio();
   SDL_Quit();
 }

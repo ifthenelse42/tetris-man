@@ -17,10 +17,9 @@
  *
  * @see Game::Loop:Run
  */
-void Game::Input::handle(Game::Tetromino::blocs* tetrominos, int* max, SDL_Event* event, Game::Character::position* position, bool* left, bool* right, bool* run)
+void Game::Input::handle(Game::Tetromino::blocs* tetrominos, int* max, SDL_Event* event, Game::Character::position* position, bool* left, bool* right, bool* jump, bool* run)
 {
   Game::Character character;
-  Engine::Collision collision;
 
   while (SDL_PollEvent(event) != 0) {
     // Si l'utilisateur demande à fermer la fenêtre du jeu
@@ -34,7 +33,7 @@ void Game::Input::handle(Game::Tetromino::blocs* tetrominos, int* max, SDL_Event
       case SDLK_DOWN:
         break;
       case SDLK_UP:
-        character.moveUp(position);
+        *jump = true;
         break;
       case SDLK_LEFT:
         *left = true;
@@ -49,6 +48,7 @@ void Game::Input::handle(Game::Tetromino::blocs* tetrominos, int* max, SDL_Event
       case SDLK_DOWN:
         break;
       case SDLK_UP:
+        *jump = false;
         break;
       case SDLK_LEFT:
         *left = false;
@@ -74,5 +74,9 @@ void Game::Input::handle(Game::Tetromino::blocs* tetrominos, int* max, SDL_Event
 
   if (*right) {
     character.moveRight(position);
+  }
+  
+  if (*jump) {
+    character.moveUp(position);
   }
 }

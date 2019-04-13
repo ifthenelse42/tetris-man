@@ -5,6 +5,7 @@
 #include "engine/texture.hpp"
 #include "game/game.hpp"
 #include "game/tetromino.hpp"
+#include "game/character.hpp"
 #include <iostream>
 #include <math.h>
 
@@ -20,9 +21,7 @@
 void Game::Tetromino::fall(blocs* tetrominos, int* max)
 {
   for (int k = 0; k < *max; k++) {
-    if (tetrominos[k].move) {
-      tetrominos[k].startY += 5;
-    }
+    tetrominos[k].startY += tetrominos[k].velocity;
   }
 }
 
@@ -40,7 +39,7 @@ void Game::Tetromino::fall(blocs* tetrominos, int* max)
  *
  * @see Game::Tetromino
  */
-void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, int rotation, int* max)
+void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, int rotation, int* speed, int* max)
 {
   Engine::Render render;
   Game::Tetromino tetromino;
@@ -51,7 +50,8 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
   tetrominos[last].startY = startY;
   tetrominos[last].type = type;
   tetrominos[last].rotation = 0;
-  tetrominos[last].move = true;
+  tetrominos[last].speed = *speed;
+  tetrominos[last].velocity = *speed;
   tetrominos[last].zombie = false;
 
   // La matrice bi-dimentionnelle représentant le tetromino dépend de son type
@@ -118,7 +118,7 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
  * @see Game::Tetromino::interlock
  * @see Game::Tetromino::add
  */
-void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetrominoActual, Game::Tetromino::compatible* interlocks, int* max, int* height)
+void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetrominoActual, Game::Tetromino::compatible* interlocks, int* speed, int* max, int* height)
 {
   Game::Tetromino tetromino;
   Engine::Collision collision;
@@ -151,7 +151,6 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
   int spawnY1 = -((rand() % (1000 + 25) + 25) + 25);
   int spawnY2 = spawnY1 + (tetromino.maxSize * tetromino.blocHeight);
   bool canSpawn = true;
-  std::cout << spawnY1 << std::endl;
 
   if (*max < tetromino.max) {
     /**
@@ -170,7 +169,7 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
     }
 
     if (canSpawn) {
-        tetromino.add(tetrominos, spawnX1, spawnY1, interlocks[indexRand].type, interlocks[indexRand].rotation, max);
+        tetromino.add(tetrominos, spawnX1, spawnY1, interlocks[indexRand].type, interlocks[indexRand].rotation, speed, max);
         tetrominos[tetrominoActual].zombie = true; // le tetromino deviens zombie seulement si un spawn a eu lieu.
     }
   }
@@ -180,7 +179,7 @@ void Game::Tetromino::addRandom(Game::Tetromino::blocs* tetrominos, int tetromin
  * Fonction: Game::Tetromino::fallingTetrominos
  * ------------------------
  * Retourne le nombre de tetrominos tombant dans la partie. 
- * C'est-à-dire qui a la propriété .move = true.
+ * C'est-à-dire qui a la propriété velocity = 0.
  *
  * @param tetrominos Pointeur vers les tetrominos existant dans la partie
  *
@@ -191,7 +190,7 @@ unsigned int Game::Tetromino::fallingTetrominos(Game::Tetromino::blocs* tetromin
   int amount = 0;
 
   for (int i = 0; i < *max; i++) {
-    if (tetrominos[i].move) {
+    if (tetrominos[i].velocity != 0) {
       amount++;
     }
   }
@@ -575,7 +574,7 @@ void Game::Tetromino::interlock(blocs tetrominos, compatible* interlocks, int in
  * @see Game::Tetromino::fall
  * @see Game::Run::loop
  */
-void Game::Tetromino::spawnDetector(blocs* tetrominos, int* max, int* height)
+void Game::Tetromino::spawnDetector(blocs* tetrominos, int* speed, int* max, int* height)
 {
   Engine::Collision collision;
   Game::Tetromino tetromino;
@@ -599,7 +598,7 @@ void Game::Tetromino::spawnDetector(blocs* tetrominos, int* max, int* height)
       compatible interlocks[tetromino.maxInterlock];
       tetromino.interlock(tetrominos[i], interlocks, i);
 
-      tetromino.addRandom(tetrominos, i, interlocks, max, height);
+      tetromino.addRandom(tetrominos, i, interlocks, speed, max, height);
     }
   }
 }
@@ -613,7 +612,7 @@ void Game::Tetromino::spawnDetector(blocs* tetrominos, int* max, int* height)
  *
  * @see Game::Tetromino::spawn
  */
-void Game::Tetromino::handleSpawn(blocs* tetrominos, int* max, int* height)
+void Game::Tetromino::handleSpawn(blocs* tetrominos, int* speed, int* max, int* height)
 {
   Game::Tetromino tetromino;
 
@@ -622,7 +621,7 @@ void Game::Tetromino::handleSpawn(blocs* tetrominos, int* max, int* height)
    * puis on vérifie si un tetromino peut apparaître à l'emplacement où il se trouve. 
    * Si c'est le cas, on fait apparaître le tetromino.
    */
-  tetromino.spawnDetector(tetrominos, max, height);
+  tetromino.spawnDetector(tetrominos, speed, max, height);
 }
 
 /**
@@ -649,25 +648,24 @@ void Game::Tetromino::moveAllUp(blocs* tetrominos, int amount, int* max, int* he
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param max Pointeur vers le nombre maximum de tetromino en mémoire.
+ *
+ * @return Si un tetromino touche la limite de la zone d'affichage ou non.
  */
-void Game::Tetromino::limit(blocs* tetrominos, int* max, int* height)
+bool Game::Tetromino::limit(blocs* tetrominos, int* max)
 {
-  Game::Tetromino tetromino;
-
   bool push = false;
+
   for (int i = 0; i < *max; i++) {
     /**
      * Le tetromino doit bientôt atteindre la bordure supérieure de l'affichage en étant immobile.
      */
-    if (tetrominos[i].startY < 400 && !tetrominos[i].move) {
+    if (tetrominos[i].startY < 400 && tetrominos[i].velocity == 0) {
       push = true;
       break;
     }
   }
 
-  if (push) {
-    tetromino.moveAllUp(tetrominos, 2, max, height);
-  }
+  return push;
 }
 
 /**
@@ -699,7 +697,6 @@ void Game::Tetromino::clean(blocs* tetrominos, int* max, int* height)
       //tetrominos[i].startX = 0;
       tetrominos[i].type = 0;
       tetrominos[i].rotation = 0;
-      //tetrominos[i].move = false;
       //tetrominos[i].zombie = false;
       tetrominos[i].coordinate = { { 0, 0, 0, 0}, {0, 0, 0, 0} };
     }

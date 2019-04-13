@@ -46,8 +46,6 @@ SDL_Texture* Game::Character::create(SDL_Renderer* renderer, SDL_Surface* image,
   position->y = 0;
   position->height = height;
 
-  std::cout << height << std::endl;
-
   return personnage;
 }
 
@@ -86,17 +84,17 @@ void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* ma
   /**
    * Chaque vélocité se réduira toute seul à chaque invocation de cette fonction. 
    * Cela permet de faire un effet de glissement pour les déplacements x et des chutes 
-   * fluides pour les déplacements y.
+   * fluides pour les déplacements y. On utilise une prédiction en X et Y.
    */
-  Game::Character::position nextX;
-  nextX.x = position->x + position->velocityX; // ici on ajoute la position suivis de la prochaine vélocité, pour calculer la collision sur ce prochain mouvement
-  nextX.y = position->y + position->velocityY;
-  nextX.width = position->width;
-  nextX.height = position->height;
-  nextX.velocityX = position->velocityX;
-  nextX.velocityY = position->velocityY;
+  Game::Character::position next;
+  next.x = position->x + position->velocityX; // ici on ajoute la position suivis de la prochaine vélocité, pour calculer la collision sur ce prochain mouvement
+  next.y = position->y + position->velocityY;
+  next.width = position->width;
+  next.height = position->height;
+  next.velocityX = position->velocityX;
+  next.velocityY = position->velocityY;
 
-  if (!collision.collideCharacterY1(tetrominos, max, &nextX, run)) {
+  if (!collision.collideCharacterSide(tetrominos, max, &next, run)) {
     if (position->velocityX > 0) {
       position->velocityX--;
     } else if (position->velocityX < 0) {
@@ -116,16 +114,51 @@ void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* ma
   nextY.height = position->height;
   nextY.velocityX = position->velocityX;
   nextY.velocityY = position->velocityY;
-  std::cout << "NextY : " << nextY.y << std::endl;
 
+  /**
+   * Si la prochaine position du personnage touche un bloc, alors on ralentis la chute. 
+   *
+   * Et puis si il touche vraiment un bloc, on l'arrête.
+   */
   if (!collision.collideCharacter(tetrominos, max, &nextY, run)) {
     if (position->velocityY >= 0 && position->velocityY <= 5) {
       position->velocityY++;
     } else if (position->velocityY <= 0 && position->velocityY >= -50) {
-      position->velocityY++;
+      if (position->velocityY + 1 == 0) {
+        position->velocityY+= 2;
+      } else {
+        position->velocityY++;
+      }
     }
   } else {
     position->velocityY = 0;
+  }
+  
+  /**
+   * Ici on vérifie si le personnage touche le y2 d'un bloc. 
+   * Si c'est le cas, il doit tomber en suivant la vélocité du tetromino. 
+   * On utilise une prédiction X et Y sur le personnage cette fois.
+   */
+  Game::Character::position nextX;
+  nextX.x = position->x + position->velocityX; // ici on ajoute la position suivis de la prochaine vélocité, pour calculer la collision sur ce prochain mouvement
+  nextX.y = position->y;
+  nextX.width = position->width;
+  nextX.height = position->height;
+  nextX.velocityX = position->velocityX;
+  nextX.velocityY = position->velocityY;
+
+  if (collision.collideCharacterFall(tetrominos, max, &nextY, run)) {
+    position->velocityY = 10;
+  }
+
+  /**
+   * On détecte ici s'il doit y avoir un game-over. C'est-à-dire que 
+   * le personnage est entre un y2 d'un bloc et y1 d'un autre. Si c'est le cas 
+   * ça veut dire qu'il vient de se faire écraser.
+   */
+  if (collision.collideCharacterDead(tetrominos, max, position, run)) {
+    // On arrête le jeu à ce moment-là.
+    *run = false;
   }
 }
 
@@ -178,9 +211,24 @@ void Game::Character::moveRight(Game::Character::position* position)
  */
 void Game::Character::moveUp(Game::Character::position* position)
 {
-  // On ne peut sauter que si on est pas en train de tomber ou en plein saut
+  /**
+   * On ne peut sauter que si on est pas en train de tomber ou en plein saut. 
+   * TODO: empêcher de sauter successivement
+   */
   if (position->velocityY == 0) {
-    std::cout << "Jump!" << std::endl;
     position->velocityY = -20;
   }
+}
+
+/**
+ * Fonction: Game::Character::allUp
+ * -------------------
+ * Fait suivre la position du personnage lorsque la "camera" monte.
+ *
+ * @param position Pointeur vers les coordonnées du personnage.
+ * @param amount Montant de pixel à faire monter le personnage d'un coup.
+ */
+void Game::Character::allUp(Game::Character::position* position, int amount)
+{
+  position->y += amount;
 }

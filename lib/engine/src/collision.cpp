@@ -111,7 +111,7 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
     int tetrominoActualx1 = tetrominos[tetrominoIndex].startX;
     int tetrominoActualy1 = tetrominos[tetrominoIndex].startY;
     int tetrominoActualx2 = tetrominoActualx1 + (tetromino.blocWidth * tetromino.maxSize);
-    int tetrominoActualy2 = tetrominoActualy1 + (tetromino.blocHeight * tetromino.maxSize);
+    int tetrominoActualy2 = tetrominoActualy1 + (tetromino.blocHeight * tetromino.maxSize) + tetrominos[tetrominoIndex].velocity;
 
     int tetrominoAllx1 = tetrominos[k].startX;
     int tetrominoAlly1 = tetrominos[k].startY;
@@ -125,7 +125,7 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
      */
     if ((k != tetrominoIndex)
         && (tetrominoCollide(tetrominoActualx1, tetrominoActualy1, tetrominoActualx2, tetrominoActualy2, tetrominoAllx1, tetrominoAlly1, tetrominoAllx2, tetrominoAlly2))
-        && (tetrominos[tetrominoIndex].move || tetrominos[k].move)) {
+        && (tetrominos[tetrominoIndex].velocity != 0 || tetrominos[k].velocity != 0)) {
       // On voit si chaque startX/Y + les points de la matrice où un bloc est présent touche un autre
       // Si la coordonnée actuelle est un bloc - on le compare avec tous les autres blocs
       for (int xActual = 0; xActual < tetromino.maxSize; xActual++) {
@@ -136,6 +136,7 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
             int y1BlocActual = tetrominos[tetrominoIndex].startY + (yActual * tetromino.blocHeight);
             int x2BlocActual = x1BlocActual + Game::Tetromino::blocWidth;
             int y2BlocActual = y1BlocActual + Game::Tetromino::blocHeight;
+            int y2BlocActualNext = y1BlocActual + Game::Tetromino::blocHeight + tetrominos[tetrominoIndex].velocity * 2;
 
             // On fait une autre boucle pour tous les blocs à l'intérieur du tetromino actuel
             for (int xAll = 0; xAll < Game::Tetromino::maxSize; xAll++) {
@@ -147,12 +148,20 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
                   int x2BlocAll = x1BlocAll + tetromino.blocWidth;
                   int y2BlocAll = y1BlocAll + tetromino.blocHeight;
 
-                  // On compare les blocs du tetromino actuel avec tous les autres pour voir s'il y a collision
-                  if (xCollide(x1BlocActual, x2BlocActual, x1BlocAll, x2BlocAll)
-                      && yCollide(y1BlocActual, y2BlocActual, y1BlocAll, y2BlocAll)) {
-
-                    // Si le bloc actuel touche un autre bloc, on le rend lui aussi immobile
-                    tetrominos[tetrominoIndex].move = false;
+                  
+                  if (xCollide(x1BlocActual, x2BlocActual, x1BlocAll, x2BlocAll)) {
+                    /**
+                     * On vérifie d'abord si la prochaine position du bloc en touche un autre. 
+                     * Si c'est le cas, on le ralentis de 1 si la vélocité n'est pas déjà de 1. 
+                     * 
+                     * Si ce n'est pas le cas, on vérifie la collision en Y normalement.
+                     */
+                      if (yCollide(y1BlocActual, y2BlocActualNext, y1BlocAll, y2BlocAll)
+                          && tetrominos[tetrominoIndex].velocity > 1) {
+                        tetrominos[tetrominoIndex].velocity = 1;
+                      } else if (yCollide(y1BlocActual, y2BlocActual, y1BlocAll, y2BlocAll)) {
+                        tetrominos[tetrominoIndex].velocity = 0;
+                      }
                   }
                 }
               }
@@ -174,7 +183,7 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
            * */
           if ((tetrominos[tetrominoIndex].coordinate[xActual][yActual] == 1)
               && screenCollide(y2BlocActual, height)) {
-            tetrominos[tetrominoIndex].move = false;
+            tetrominos[tetrominoIndex].velocity = 0;
           }
         }
       }
@@ -248,10 +257,9 @@ bool Engine::Collision::collideCharacter(Game::Tetromino::blocs* tetrominos, int
 }
 
 /**
- * Fonction: Engine::Collision::collideCharacterY1
+ * Fonction: Engine::Collision::collideCharacterSide
  * -------------------
- * Gère la collision du personnage. Il est également être écrasé (et donc game over) 
- * s'il est entre deux tetrominos.
+ * Détecte si le personnage, en se déplacant vers le côté d'un tetromino, touche un de ses blocs.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param max Dernier index occupé par les tetrominos
@@ -260,7 +268,7 @@ bool Engine::Collision::collideCharacter(Game::Tetromino::blocs* tetrominos, int
  *
  * @return Si le personnage touche un autre bloc ou non.
  */
-bool Engine::Collision::collideCharacterY1(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
+bool Engine::Collision::collideCharacterSide(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
 {
   Game::Tetromino tetromino;
 
@@ -300,12 +308,142 @@ bool Engine::Collision::collideCharacterY1(Game::Tetromino::blocs* tetrominos, i
           // On peut alors vérifier si le personnage touche un des y1 des blocs (et les x)
           if (position->y + position->height > y1BlocActual
               && xCollide(position->x, position->x + position->width, x1BlocActual, x2BlocActual)) {
-            std::cout << "collision" << std::endl;
+            // Si le joueur touche bien le sol d'un des blocs, alors on renvoie true
+            res = true;
+          }
+          }
+        }
+      }
+    }
+  }
 
-            std::cout << "y1BlocActual : " << y1BlocActual << std::endl;
-            std::cout << "y2BlocActual : " << y2BlocActual << std::endl;
-            std::cout << "position y1 : " << position->y << std::endl;
-            std::cout << "position y2 : " << position->y + position->height << std::endl;
+  return res;
+}
+
+/**
+ * Fonction: Engine::Collision::collideCharacterFall
+ * -------------------
+ * Détecte si le personnage touche le côté bas d'un tetromino, ce qui le fera tomber.
+ *
+ * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
+ * @param max Dernier index occupé par les tetrominos
+ * @param position Pointeur vers les coordonnées du personnage
+ * @param run Pointeur vers l'interrupteur du jeu, pour terminer le jeu si le personnage meurt
+ *
+ * @return Si le personnage touche un autre bloc ou non.
+ */
+bool Engine::Collision::collideCharacterFall(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
+{
+  Game::Tetromino tetromino;
+
+  bool res = false;
+
+  /**
+   * On fait une boucle dans tous les tetrominos, s'il y a une première collision, 
+   * on vérifie si le personnage touche un des blocs.
+   */
+  for (int i = 0; i < *max; i++) {
+    // On récupère les coordonnées des tetrominos
+    int tetrominoX1 = tetrominos[i].startX;
+    int tetrominoX2 = tetrominoX1 + (tetromino.blocWidth * tetromino.maxSize);
+    int tetrominoY1 = tetrominos[i].startY;
+    int tetrominoY2 = tetrominoY1 + (tetromino.blocHeight * tetromino.maxSize) * 2;
+
+    // On vérifie maintenant s'il y a collision
+    if (yCollide(position->y, position->y + position->height, tetrominoY1, tetrominoY2)
+        && xCollide(position->x, position->x + position->width, tetrominoX1, tetrominoX2)) {
+      /** 
+       * S'il y a collision avec un tetromino absolu, alors on vérifie si il y a 
+       * également collision avec les blocs du tetromino en question. 
+       *
+       * On fait donc des boucles dans les blocs du tetromino actuel.
+       */
+      for (int xActual = 0; xActual < tetromino.maxSize; xActual++) {
+        for (int yActual = 0; yActual < tetromino.maxSize; yActual++) {
+          // Le bloc actuel doit en être un
+          if (tetrominos[i].coordinate[xActual][yActual] == 1) {
+          // On récupère les coordonnées du bloc actuel
+          int x1BlocActual = tetrominos[i].startX + (xActual * tetromino.blocWidth);
+          int y1BlocActual = tetrominos[i].startY + (yActual * tetromino.blocWidth);
+
+          int x2BlocActual = x1BlocActual + Game::Tetromino::blocWidth;
+          int y2BlocActual = y1BlocActual + Game::Tetromino::blocHeight;
+          int y2BlocActualNext = y1BlocActual + Game::Tetromino::blocHeight + tetrominos[i].velocity;
+
+          /**
+           * On vérifie si le personnage touche le y2 d'un bloc. 
+           * Il doit également ne toucher aucun autre bloc, donc être en plein saut.
+           *
+           * Soit le y1 du personnage est inférieur au y2 d'un bloc, soit 
+           * le y1 est inférieur au y2 d'un bloc + la vélocité d'un bloc
+           */
+          //if (position->y <= y2BlocActual && position->y >= y2BlocActual
+          if ((position->y <= y2BlocActualNext && position->y >= y1BlocActual)
+              && xCollide(position->x, position->x + position->width, x1BlocActual, x2BlocActual)) {
+            // Si le joueur touche bien le sol d'un des blocs, alors on renvoie true
+            res = true;
+          }
+          }
+        }
+      }
+    }
+  }
+
+  return res;
+}
+
+/**
+ * Fonction: Engine::Collision::collideCharacterTop
+ * -------------------
+ * Détecte si le personnage est allé en dessous d'un bloc, ce qui provoque sa mort.
+ *
+ * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
+ * @param max Dernier index occupé par les tetrominos
+ * @param position Pointeur vers les coordonnées du personnage
+ * @param run Pointeur vers l'interrupteur du jeu, pour terminer le jeu si le personnage meurt
+ *
+ * @return Si le personnage touche un autre bloc ou non.
+ */
+bool Engine::Collision::collideCharacterDead(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
+{
+  Game::Tetromino tetromino;
+
+  bool res = false;
+
+  /**
+   * On fait une boucle dans tous les tetrominos, s'il y a une première collision, 
+   * on vérifie si le personnage touche un des blocs.
+   */
+  for (int i = 0; i < *max; i++) {
+    // On récupère les coordonnées des tetrominos
+    int tetrominoX1 = tetrominos[i].startX;
+    int tetrominoX2 = tetrominoX1 + (tetromino.blocWidth * tetromino.maxSize);
+    int tetrominoY1 = tetrominos[i].startY;
+    int tetrominoY2 = tetrominoY1 + (tetromino.blocHeight * tetromino.maxSize);
+
+    // On vérifie maintenant s'il y a collision
+    if (yCollide(position->y, position->y + position->height, tetrominoY1, tetrominoY2)
+        && xCollide(position->x, position->x + position->width, tetrominoX1, tetrominoX2)) {
+      /** 
+       * S'il y a collision avec un tetromino absolu, alors on vérifie si il y a 
+       * également collision avec les blocs du tetromino en question. 
+       *
+       * On fait donc des boucles dans les blocs du tetromino actuel.
+       */
+      for (int xActual = 0; xActual < tetromino.maxSize; xActual++) {
+        for (int yActual = 0; yActual < tetromino.maxSize; yActual++) {
+          // Le bloc actuel doit en être un
+          if (tetrominos[i].coordinate[xActual][yActual] == 1) {
+          // On récupère les coordonnées du bloc actuel
+          int x1BlocActual = tetrominos[i].startX + (xActual * tetromino.blocWidth);
+          int y1BlocActual = tetrominos[i].startY + (yActual * tetromino.blocWidth);
+
+          int x2BlocActual = x1BlocActual + Game::Tetromino::blocWidth;
+          int y2BlocActual = y1BlocActual + Game::Tetromino::blocHeight;
+
+          // On peut alors vérifier si le personnage touche un des y1 des blocs (et les x)
+          if (position->y < y2BlocActual && position->y + position->height > y1BlocActual
+              && xCollide(position->x, position->x + position->width, x1BlocActual, x2BlocActual)) {
             // Si le joueur touche bien le sol d'un des blocs, alors on renvoie true
             res = true;
           }
