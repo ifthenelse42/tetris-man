@@ -102,6 +102,8 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
 
   // On applique la transposition (sera faite si nécessaire seulement)
   transpose(&tetrominos[last], rotation);
+
+  (*max)++;
 }
 
 /**

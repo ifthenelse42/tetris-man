@@ -160,7 +160,7 @@ void Engine::Texture::display(SDL_Renderer* renderer, SDL_Texture* texture, int 
 }
 
 /**
- * Fonction: Engine::Texture::displayText
+ * Fonction: Engine::Texture::displayImage
  * ------------------------
  * Affiche la texture d'un texte. 
  * La différence avec Engine::Texture::display réside dans l'inutilité d'attribuer une largeur et une hauteur à un texte, 
@@ -171,12 +171,12 @@ void Engine::Texture::display(SDL_Renderer* renderer, SDL_Texture* texture, int 
  * @param x Point X où afficher la texutre
  * @param y Point Y où afficher la texture
  */
-void Engine::Texture::displayText(SDL_Renderer* renderer, SDL_Texture* texture, int x, int y)
+void Engine::Texture::displayImage(SDL_Renderer* renderer, SDL_Texture* texture, int x, int y)
 {
   int width = 0;
   int height = 0;
 
   SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-  SDL_Rect position = { x, y, width - 50, height - 75 };
+  SDL_Rect position = { x, y, width, height };
   SDL_RenderCopy(renderer, texture, NULL, &position);
 }

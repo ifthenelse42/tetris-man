@@ -1,0 +1,113 @@
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_ttf.h"
+#include "SDL2/SDL_mixer.h"
+#include "engine/engine.hpp"
+#include "engine/collision.hpp"
+#include "engine/render.hpp"
+#include "engine/texture.hpp"
+#include "engine/error.hpp"
+#include "game/game.hpp"
+#include "game/character.hpp"
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+
+/**
+ * Fonction: Game::Character::create
+ * -------------------
+ * Créé le personnage à partir d'une image donnée, et retourne une texture avec.
+ *
+ * @param renderer Rendu où affecter la texture.
+ * @param image Localisation de l'image à utiliser.
+ *
+ * @return La texture créé depuis l'image.
+ *
+ * @see Game::Loop:Run
+ */
+SDL_Texture* Game::Character::create(SDL_Renderer* renderer, SDL_Surface* image)
+{
+  Engine::Error error;
+
+  SDL_Surface* imagePersonnage = IMG_Load("assets/image/perso.png");
+  SDL_Texture* personnage = SDL_CreateTextureFromSurface(renderer, imagePersonnage);
+
+  error.textureLoad(personnage);
+
+  return personnage;
+}
+
+/**
+ * Fonction: Game::Character::display
+ * -------------------
+ * Affiche le personnage.
+ *
+ * @param renderer Rendu où afficher le personnage.
+ * @param personnage Personnage à afficher.
+ *
+ * @see Game::Loop:Run
+ */
+void Game::Character::display(SDL_Renderer* renderer, SDL_Texture* personnage, Game::Character::position* position)
+{
+  Engine::Texture texture;
+
+  texture.displayImage(renderer, personnage, position->x1, position->y1);
+}
+
+/**
+ * Fonction: Game::Character::fall
+ * -------------------
+ * Simule une gravité sur le personnage.
+ *
+ * @param position Pointeur vers les coordonnées du personnage.
+ */
+void Game::Character::fall(Game::Tetromino::blocs* tetrominos, int* max, Game::Character::position* position, bool* run)
+{
+  Engine::Collision collision;
+
+  /**
+   * On affecte une vélocité positive au personnage, pour le faire tomber. 
+   *
+   * Le personnage tombe uniquement si il ne touche pas le y1 d'un bloc.
+   */
+  if (!collision.collideCharacterY1(tetrominos, max, position, run)) {
+    position->velocityY = 5;
+  }
+}
+
+/**
+ * Fonction: Game::Character::velocity
+ * -------------------
+ * Gère la vélocité du personnage, pour la graviter ou les déplacements.
+ *
+ * @param tetrominos Pointeur vers les tetrominos présent dans le jeu.
+ * @param max Pointeur vers le nombre maximum de tetromino présent dans le jeu.
+ * @param position Pointeur vers les coordonnées du personnage.
+ * @param run Pointeur vers le booléen run, qui s'il devient false, arrête le jeu.
+ */
+void Game::Character::velocity(Game::Tetromino::blocs* tetrominos, int* max, Game::Character::position* position, bool* run)
+{
+  std::cout << "velocityX : " << position->velocityX << std::endl;
+}
+
+/**
+ * Fonction: Game::Character::moveRight
+ * -------------------
+ * Déplace le personnage vers la droite.
+ *
+ * @param tetrominos Pointeur vers les tetrominos présent dans le jeu.
+ * @param max Pointeur vers le nombre maximum de tetromino présent dans le jeu.
+ * @param position Pointeur vers les coordonnées du personnage.
+ * @param run Pointeur vers le booléen run, qui s'il devient false, arrête le jeu.
+ */
+void Game::Character::moveRight(Game::Tetromino::blocs* tetrominos, int* max, Game::Character::position* position, bool* run)
+{
+  Engine::Collision collision;
+
+  /**
+   * On met à jour les coordonnées pour refléter le déplacement vers la droite.
+   */
+  if (!collision.collideCharacter(tetrominos, max, position, run)) {
+    position->velocityX = 5;
+  }
+}

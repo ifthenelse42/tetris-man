@@ -1,4 +1,4 @@
-OBJS = lib/game/src/main.cpp lib/engine/src/run.cpp lib/engine/src/collision.cpp lib/engine/src/render.cpp lib/engine/src/texture.cpp lib/engine/src/error.cpp lib/engine/src/log.cpp lib/game/src/tetromino.cpp 
+OBJS = lib/game/src/main.cpp lib/engine/src/run.cpp lib/engine/src/collision.cpp lib/engine/src/render.cpp lib/engine/src/texture.cpp lib/engine/src/error.cpp lib/engine/src/log.cpp lib/game/src/input.cpp lib/game/src/character.cpp lib/game/src/tetromino.cpp 
 
 CC = g++
 
