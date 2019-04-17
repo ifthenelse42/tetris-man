@@ -59,12 +59,18 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   bool jump = false; // Variable activant le saut
   bool run = true; // Cette variable indique si le jeu est démarré ou non
   int ticks = 0; // Cette variable est incrémenté à chaque itération de la boucle du jeu
+	int time = 0; // Cette variable sert à récupérer les secondes depuis le début de la partie
   int max = 0; // Variable contenant le nombre max de tetromino, qui est utilisé par plusieurs fonctions dans le code source
   int speed = 3; // Variable contenant la vitesse de chute des tetrominos
   int height = render.height; // Hauteur de la zone de jeu - manipulé par la caméra
   Game::Character::position position; // On initialise la position du personnage
   SDL_Texture* personnage = character.create(renderer, IMG_Load("assets/image/perso.png"), &position); // On créé le personnage joué par le joueur
-  Mix_Music* ambiance = Mix_LoadMUS("assets/music/tetris-d.m4a"); // On charge la musique d'ambiance
+  Mix_Music* ambiance = Mix_LoadMUS("assets/music/tetris-d.mp3"); // On charge la musique d'ambiance
+
+  if (ambiance == NULL) {
+    printf("Unable to load mp3 file: %s\n", Mix_GetError()); 
+  }
+
   if (Mix_PlayMusic(ambiance, 1) == -1) {
     printf("Mix_PlayMusic: %s\n", Mix_GetError());
   }
@@ -121,10 +127,14 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
       tetromino.handleSpawn(tetrominos, &speed, &max, &height);
       ticks = 0;
     }
+		double seconds = SDL_GetTicks();
+		std::cout.setf(std::ios::fixed);
+		std::cout.setf(std::ios::showpoint);
+		std::cout.precision(3);
+		//std::cout << "Secondes : " << seconds / 1000 << std::endl;
 
     // On balaye l'affichage
     render.clear(renderer);
-
 
     /**
      * Invocation des fonctions affectant les entrées de l'utilisateur.
@@ -164,10 +174,10 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
     SDL_RenderPresent(renderer);
 
     ticks++;
+    time++;
   }
 
   Mix_FreeMusic(ambiance);
-  ambiance = NULL;
 }
 
 /**

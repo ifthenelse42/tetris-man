@@ -53,7 +53,11 @@ int Engine::Error::initTTF()
  */
 int Engine::Error::initMixer()
 {
-	Mix_Init(MIX_INIT_MP3);
+	if (Mix_Init(MIX_INIT_MP3) == 0) {
+    printf("Erreur détecté lors de l'initialisation de Mix: %s\n", Mix_GetError());
+    return EXIT_FAILURE;
+  }
+  
   if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
     printf("Erreur détecté lors de l'initialisation de SDL_mixer: %s\n", Mix_GetError());
     return EXIT_FAILURE;
