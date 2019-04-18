@@ -34,9 +34,8 @@ SDL_Texture* Engine::Texture::create(SDL_Renderer* renderer, int width, int heig
  * puis on change la couleur du rendu et on y créé des lignes. 
  * Cela donne un bloc de tetromino.
  *
- * TODO: couleur à choisir en argument de la fonction
- *
  * @param renderer Rendu où affecter le nouveau bloc
+ * @param color Couleurs du bloc
  *
  * @return Le pointeur vers le bloc nouvellement créé
  *
@@ -44,7 +43,7 @@ SDL_Texture* Engine::Texture::create(SDL_Renderer* renderer, int width, int heig
  * @see SDL_SetRenderTarget
  * @see Engine::Texture::createLine
  */
-SDL_Texture* Engine::Texture::createBloc(SDL_Renderer* renderer)
+SDL_Texture* Engine::Texture::createBloc(SDL_Renderer* renderer, SDL_Color color)
 {
   Engine::Texture texture;
   Game::Tetromino tetromino;
@@ -57,7 +56,7 @@ SDL_Texture* Engine::Texture::createBloc(SDL_Renderer* renderer)
   SDL_SetRenderTarget(renderer, bloc);
 
   // Puis on change sa couleur
-  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_RenderClear(renderer);
 
   // On ajoute des lignes pour faire jolie

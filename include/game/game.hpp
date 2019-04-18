@@ -7,5 +7,7 @@ class Game {
   public:
   class Tetromino;
   class Character;
+  class Menu;
+  class HUD;
   class Input;
 };

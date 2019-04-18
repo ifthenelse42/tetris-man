@@ -10,6 +10,7 @@
 #include "engine/run.hpp"
 #include "game/game.hpp"
 #include "game/input.hpp"
+#include "game/hud.hpp"
 #include "game/character.hpp"
 #include <iostream>
 
@@ -45,7 +46,7 @@ void Engine::Run::SDL()
  * @see Engine::Collision
  * @see Game
  */
-void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
+void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* scoreFont, TTF_Font* timeFont)
 {
   Engine::Texture texture;
   Engine::Render render;
@@ -53,7 +54,9 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   Game::Tetromino tetromino;
   Game::Character character;
   Game::Input input;
+  Game::HUD hud;
 
+  bool game = true; // Variable venant faire en sorte que le jeu démarre
   bool left = false; // Variable activant le mouvement vers la gauche
   bool right = false; // Variable activant le mouvement vers la droite
   bool jump = false; // Variable activant le saut
@@ -61,85 +64,71 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
   int ticks = 0; // Cette variable est incrémenté à chaque itération de la boucle du jeu
 	int time = 0; // Cette variable sert à récupérer les secondes depuis le début de la partie
   int max = 0; // Variable contenant le nombre max de tetromino, qui est utilisé par plusieurs fonctions dans le code source
-  int speed = 3; // Variable contenant la vitesse de chute des tetrominos
+  int speed = 1; // Variable contenant la vitesse de chute des tetrominos
   int height = render.height; // Hauteur de la zone de jeu - manipulé par la caméra
   Game::Character::position position; // On initialise la position du personnage
   SDL_Texture* personnage = character.create(renderer, IMG_Load("assets/image/perso.png"), &position); // On créé le personnage joué par le joueur
   Mix_Music* ambiance = Mix_LoadMUS("assets/music/tetris-d.mp3"); // On charge la musique d'ambiance
 
+  /**
+   * On charge les différentes couleurs de blocs
+   * TODO
+   */
+  SDL_Color black = { 255, 0, 0, 255 };
+  SDL_Texture* blocBlack = texture.createBloc(renderer, black);
+
+  SDL_Color red = { 255, 0, 0, 255 };
+  SDL_Texture* blocRed = texture.createBloc(renderer, red);
+
+  SDL_Color orange = { 100, 100, 0, 255 };
+  SDL_Texture* blocOrange = texture.createBloc(renderer, orange);
+
+  SDL_Color blue = { 0, 0, 255, 255 };
+  SDL_Texture* blocBlue = texture.createBloc(renderer, blue);
+
+  SDL_Color cyan = { 0, 255, 0, 255 };
+  SDL_Texture* blocCyan = texture.createBloc(renderer, cyan);
+
+  SDL_Color purple = { 0, 255, 0, 255 };
+  SDL_Texture* blocPurple = texture.createBloc(renderer, purple);
+
   if (ambiance == NULL) {
     printf("Unable to load mp3 file: %s\n", Mix_GetError()); 
   }
 
-  if (Mix_PlayMusic(ambiance, 1) == -1) {
+  if (Mix_PlayMusic(ambiance, -1) == -1) {
     printf("Mix_PlayMusic: %s\n", Mix_GetError());
   }
 
-  // On génère un texte
-  const char* activeText = "1";
-  const char* inactiveText = "0";
-  SDL_Texture* active = texture.createText(renderer, { 0, 0, 0 }, font, activeText);
-  SDL_Texture* inactive = texture.createText(renderer, { 0, 0, 0 }, font, inactiveText);
-
   SDL_Event event;
   Game::Tetromino::blocs tetrominos[Game::Tetromino::max];
-
-  // On rajoute un tetromino de type 1
-  //tetromino.add(tetrominos, 275, -1000, 5, 0, &max);
-  //tetromino.add(tetrominos, 225, -800, 1, 0, &max);
-  //tetromino.add(tetrominos, 200, -600, 2, 0, &max);
-  //tetromino.add(tetrominos, 150, -400, 3, 0, &max);
-  //tetromino.add(tetrominos, 250, -200, 3, 0, &max);
-  //tetromino.add(tetrominos, 200, -200, 3, 0, &max);
-  //tetromino.add(tetrominos, 150, -200, 3, 0, &max);
-  //tetromino.add(tetrominos, 100, -200, 3, 0, &max);
-  //tetromino.add(tetrominos, 50, -200, 3, 0, &max);
-  //tetromino.add(tetrominos, 0, -200, 3, 0, &max);
-  tetromino.add(tetrominos, 125, height - 50, 2, 1, &speed, &max);
-  tetromino.add(tetrominos, 225, height - 50, 2, 1, &speed, &max);
-  tetromino.add(tetrominos, 325, height - 50, 2, 1, &speed, &max);
-  tetromino.add(tetrominos, 425, height - 50, 2, 1, &speed, &max);
-  tetromino.add(tetrominos, 525, height - 50, 2, 1, &speed, &max);
-
-  tetromino.add(tetrominos, 100, -600, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 150, -1400, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 200, -2600, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 250, -3400, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 300, -1900, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 350, -400, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 400, -100, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 450, -100, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 500, -800, 3, 0, &speed, &max);
-  tetromino.add(tetrominos, 550, -900, 3, 0, &speed, &max);
-
-  // Maintenant on fait apparaître un tetromino aléatoire s'imbricant avec le tetromino actuel
-  SDL_Texture* bloc = texture.createBloc(renderer);
+  tetromino.firstSpawn(tetrominos, &max, &speed, &height);
 
   /**
    * Boucle d'exécution du jeu. 
    * Chaque itération correspond à un frame.
    */
   while (run) {
-    //std::cout << "tetromino 5 y2 : " << tetrominos[5].startY + (2 * tetromino.blocWidth) << std::endl;
-    //std::cout << "position y1 : " << position.y << std::endl;
-
-    if (ticks == 10) {
-      tetromino.handleSpawn(tetrominos, &speed, &max, &height);
-      ticks = 0;
-    }
-		double seconds = SDL_GetTicks();
-		std::cout.setf(std::ios::fixed);
-		std::cout.setf(std::ios::showpoint);
-		std::cout.precision(3);
-		//std::cout << "Secondes : " << seconds / 1000 << std::endl;
+    /**
+     * Invocation des fonctions affectant les entrées de l'utilisateur. Ces fonctions 
+     * sont accessible sans que le jeu soit démarré.
+     */
+    input.handle(tetrominos, &max, &event, &position, &left, &right, &jump, &run);
 
     // On balaye l'affichage
     render.clear(renderer);
+    if (game) {
+    if (ticks == 10) {
+      tetromino.handleSpawn(tetrominos, &max, &height, &speed);
+      ticks = 0;
+    }
+		float time = SDL_GetTicks();
+
 
     /**
-     * Invocation des fonctions affectant les entrées de l'utilisateur.
+     * Invocation des fonctions gérant l'interface utilisateur (HUD)
      */
-    input.handle(tetrominos, &max, &event, &position, &left, &right, &jump, &run);
+    int score = hud.score(renderer, scoreFont, timeFont, &time, &speed);
 
     /**
      * Invocation des fonctions affectant les tetrominos.
@@ -160,8 +149,9 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
       character.allUp(&position, amount);
     }
 
-    tetromino.display(renderer, bloc, tetrominos, active, inactive, &max);
-    tetromino.fall(tetrominos, &max);
+    tetromino.display(renderer, blocOrange, tetrominos, &max);
+    tetromino.speedUp(tetrominos, &max, &speed, &score);
+    tetromino.fall(tetrominos, &max, &speed);
 
     /**
      * Invocation des fonctions affectant le personnage.
@@ -170,11 +160,13 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
     character.handleVelocity(tetrominos, &max, &position, &run);
     character.movement(&position);
 
-    // Rafraichissement de l'affichage
-    SDL_RenderPresent(renderer);
-
     ticks++;
     time++;
+  } else {
+    // TODO: menu ici
+  }
+    // Rafraichissement de l'affichage
+    SDL_RenderPresent(renderer);
   }
 
   Mix_FreeMusic(ambiance);
@@ -193,11 +185,12 @@ void Engine::Run::loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* fon
  *
  * @see main.cpp
  */
-void Engine::Run::close(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
+void Engine::Run::close(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* scoreFont, TTF_Font* timeFont)
 {
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
-  TTF_CloseFont(font);
+  TTF_CloseFont(scoreFont);
+  TTF_CloseFont(timeFont);
   TTF_Quit();
   Mix_CloseAudio();
   SDL_Quit();

@@ -39,6 +39,9 @@ int Engine::Error::initTTF()
     return EXIT_FAILURE;
   }
 
+  // On améliore aussi la qualité des pixels
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
   return 0;
 }
 

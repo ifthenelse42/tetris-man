@@ -4,6 +4,6 @@
 class Engine::Run {
   public:
   void SDL();
-  void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font);
-  void close(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font);
+  void loop(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* scoreFont, TTF_Font* timeFont);
+  void close(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* scoreFont, TTF_Font* timeFont);
 };
