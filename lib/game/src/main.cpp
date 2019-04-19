@@ -37,13 +37,17 @@ int main(int argc, char **argv)
   error.initMixer();
   error.initIMG();
   TTF_Font* scoreFont = TTF_OpenFont("assets/fonts/verdana.ttf", 16);
+  TTF_Font* deadFont = TTF_OpenFont("assets/fonts/verdana.ttf", 56);
+  TTF_Font* bigFont = TTF_OpenFont("assets/fonts/verdana.ttf", 64);
   TTF_Font* timeFont = TTF_OpenFont("assets/fonts/verdana.ttf", 10);
+  TTF_Font* menuFont = TTF_OpenFont("assets/fonts/verdana.ttf", 36);
+  error.fontLoad(menuFont);
   error.fontLoad(scoreFont);
   error.fontLoad(timeFont);
 
-  run.loop(renderer, window, scoreFont, timeFont);
+  run.loop(renderer, window, menuFont, deadFont, bigFont, scoreFont, timeFont);
 
-  run.close(renderer, window, scoreFont, timeFont);
+  run.close(renderer, window, menuFont, deadFont, bigFont, scoreFont, timeFont);
 
   return 0; // On retourne 0 - pour arrêter le programme
 }

@@ -17,7 +17,7 @@ class Game::Character {
 
     SDL_Texture* create(SDL_Renderer* renderer, SDL_Surface* image, position* position);
     void display(SDL_Renderer* renderer, SDL_Texture* personnage, position* position);
-    void handleVelocity(Game::Tetromino::blocs* tetrominos, int* max, position* position, bool* run);
+    void handleVelocity(Game::Tetromino::blocs* tetrominos, int* max, position* position, bool* dead, float* time, float* deathTime, Game::Tetromino::death* death1, Game::Tetromino::death* death2, Game::Tetromino::death* death3);
     void movement(position* position);
     void moveLeft(position* personnage);
     void moveRight(position* personnage);

@@ -4,6 +4,7 @@
 #include "engine/error.hpp"
 #include "game/game.hpp"
 #include "game/tetromino.hpp"
+#include <iostream>
 
 /**
  * Fonction: Engine::Texture::create

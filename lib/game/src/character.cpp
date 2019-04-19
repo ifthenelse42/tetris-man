@@ -75,9 +75,14 @@ void Game::Character::display(SDL_Renderer* renderer, SDL_Texture* personnage, G
  * @param tetrominos Pointeur vers les tetrominos présent dans le jeu.
  * @param max Pointeur vers le nombre maximum de tetromino présent dans le jeu.
  * @param position Pointeur vers les coordonnées du personnage.
- * @param run Pointeur vers le booléen run, qui s'il devient false, arrête le jeu.
+ * @param game Pointeur vers le booléen game, qui s'il devient false, arrête la partie.
+ * @param time Pointeur vers le temps de jeu.
+ * @param deathTime Pointeur vers la variable contenant le temps où le joueur a péri.
+ * @param death1 Limite basse de l'écran.
+ * @param death2 Limite gauche de l'écran.
+ * @param death3 Limite droite de l'écran.
  */
-void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* max, Game::Character::position* position, bool* run)
+void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* max, Game::Character::position* position, bool* dead, float* time, float* deathTime, Game::Tetromino::death* death1, Game::Tetromino::death* death2, Game::Tetromino::death* death3)
 {
   Engine::Collision collision;
 
@@ -94,7 +99,7 @@ void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* ma
   next.velocityX = position->velocityX;
   next.velocityY = position->velocityY;
 
-  if (!collision.collideCharacterSide(tetrominos, max, &next, run)) {
+  if (!collision.collideCharacterSide(tetrominos, max, &next)) {
     if (position->velocityX > 0) {
       position->velocityX--;
     } else if (position->velocityX < 0) {
@@ -120,7 +125,7 @@ void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* ma
    *
    * Et puis si il touche vraiment un bloc, on l'arrête.
    */
-  if (!collision.collideCharacter(tetrominos, max, &nextY, run)) {
+  if (!collision.collideCharacter(tetrominos, max, &nextY)) {
     if (position->velocityY >= 0 && position->velocityY <= 5) {
       position->velocityY++;
     } else if (position->velocityY <= 0 && position->velocityY >= -50) {
@@ -147,8 +152,18 @@ void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* ma
   nextX.velocityX = position->velocityX;
   nextX.velocityY = position->velocityY;
 
-  if (collision.collideCharacterFall(tetrominos, max, &nextY, run)) {
+  // Si le personnage touche la partie basse d'un tetromino, il est expulsé vers le sol
+  if (collision.collideCharacterFall(tetrominos, max, &nextY)) {
     position->velocityY = 10;
+  }
+
+  /**
+   * On vérifie si la prochaine position X du personnage ne dépasse pas une des lignes délimitant 
+   * la zone de jeu. Si oui, on l'empêche d'avancer.
+   */
+  if (collision.xCollide(next.x, next.x + next.width, death2->x1, death2->x2)
+      || collision.xCollide(next.x, next.x + next.width, death3->x1, death3->x2)) {
+    position->velocityX = 0;
   }
 
   /**
@@ -156,9 +171,14 @@ void Game::Character::handleVelocity(Game::Tetromino::blocs* tetrominos, int* ma
    * le personnage est entre un y2 d'un bloc et y1 d'un autre. Si c'est le cas 
    * ça veut dire qu'il vient de se faire écraser.
    */
-  if (collision.collideCharacterDead(tetrominos, max, position, run)) {
+  if (collision.collideCharacterDead(tetrominos, max, position, death1)) {
     // On arrête le jeu à ce moment-là.
-    *run = false;
+    *dead = true;
+    *deathTime = *time;
+
+    // On déplace le personnage en dehors de la zone de jeu pour pas que ça ne gène à la ré-initialisation
+    position->x = -100;
+    position->y = 0;
   }
 }
 

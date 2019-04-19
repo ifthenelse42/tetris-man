@@ -206,11 +206,10 @@ void Engine::Collision::collide(Game::Tetromino::blocs* tetrominos, int tetromin
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param max Dernier index occupé par les tetrominos
  * @param position Pointeur vers les coordonnées du personnage
- * @param run Pointeur vers l'interrupteur du jeu, pour terminer le jeu si le personnage meurt
  *
  * @return Si le personnage touche un autre bloc ou non.
  */
-bool Engine::Collision::collideCharacter(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
+bool Engine::Collision::collideCharacter(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position)
 {
   Game::Tetromino tetromino;
 
@@ -270,11 +269,10 @@ bool Engine::Collision::collideCharacter(Game::Tetromino::blocs* tetrominos, int
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param max Dernier index occupé par les tetrominos
  * @param position Pointeur vers les coordonnées du personnage
- * @param run Pointeur vers l'interrupteur du jeu, pour terminer le jeu si le personnage meurt
  *
  * @return Si le personnage touche un autre bloc ou non.
  */
-bool Engine::Collision::collideCharacterSide(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
+bool Engine::Collision::collideCharacterSide(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position)
 {
   Game::Tetromino tetromino;
 
@@ -334,11 +332,10 @@ bool Engine::Collision::collideCharacterSide(Game::Tetromino::blocs* tetrominos,
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param max Dernier index occupé par les tetrominos
  * @param position Pointeur vers les coordonnées du personnage
- * @param run Pointeur vers l'interrupteur du jeu, pour terminer le jeu si le personnage meurt
  *
  * @return Si le personnage touche un autre bloc ou non.
  */
-bool Engine::Collision::collideCharacterFall(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
+bool Engine::Collision::collideCharacterFall(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position)
 {
   Game::Tetromino tetromino;
 
@@ -399,18 +396,17 @@ bool Engine::Collision::collideCharacterFall(Game::Tetromino::blocs* tetrominos,
 }
 
 /**
- * Fonction: Engine::Collision::collideCharacterTop
+ * Fonction: Engine::Collision::collideCharacterDead
  * -------------------
  * Détecte si le personnage est allé en dessous d'un bloc, ce qui provoque sa mort.
  *
  * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
  * @param max Dernier index occupé par les tetrominos
  * @param position Pointeur vers les coordonnées du personnage
- * @param run Pointeur vers l'interrupteur du jeu, pour terminer le jeu si le personnage meurt
  *
  * @return Si le personnage touche un autre bloc ou non.
  */
-bool Engine::Collision::collideCharacterDead(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, bool* run)
+bool Engine::Collision::collideCharacterDead(Game::Tetromino::blocs* tetrominos, int *max, Game::Character::position* position, Game::Tetromino::death* death1)
 {
   Game::Tetromino tetromino;
 
@@ -447,9 +443,13 @@ bool Engine::Collision::collideCharacterDead(Game::Tetromino::blocs* tetrominos,
           int x2BlocActual = x1BlocActual + Game::Tetromino::blocWidth;
           int y2BlocActual = y1BlocActual + Game::Tetromino::blocHeight;
 
-          // On peut alors vérifier si le personnage touche un des y1 des blocs (et les x)
-          if (position->y < y2BlocActual && position->y + position->height > y1BlocActual
-              && xCollide(position->x, position->x + position->width, x1BlocActual, x2BlocActual)) {
+          /**
+           * On peut alors vérifier si le personnage touche un des y1 des blocs (et les x)
+           * OU si le personnage touche la ligne de la mort (death1).
+           */
+          if ((position->y < y2BlocActual && position->y + position->height > y1BlocActual
+              && xCollide(position->x, position->x + position->width, x1BlocActual, x2BlocActual))
+              || yCollide(position->y, position->y + position->height, death1->y1, death1->y2)) {
             // Si le joueur touche bien le sol d'un des blocs, alors on renvoie true
             res = true;
           }

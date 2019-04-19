@@ -141,7 +141,7 @@ int Engine::Error::textureLoad(SDL_Texture* texture)
  */
 int Engine::Error::musicLoad(Mix_Music* music)
 {
-  if (!music) {
+  if (music == NULL) {
     printf("Erreur détecté lors du chargement de la musique: %s\n", Mix_GetError());
   }
   

@@ -12,13 +12,19 @@ class Game::Tetromino {
     int rotation = { 0 };
     int velocity = 0;
     bool zombie;
-    int color = 0;
+    int color;
     std::vector<std::vector<int>> coordinate = std::vector<std::vector<int>>(maxSize, std::vector<int>(maxSize, 0));
   };
   struct compatible {
     int shiftX;
     int type = { 0 };
     int rotation = { 0 };
+  };
+  struct death {
+    int x1;
+    int x2;
+    int y1;
+    int y2;
   };
 
   static const int max = 1000;
@@ -45,6 +51,7 @@ class Game::Tetromino {
   void handleSpawn(blocs* tetrominos, int* max, int* height, int* speed);
   void moveAllUp(blocs* tetrominos, int amount, int* max, int* height);
   bool limit(blocs* tetrominos, int* max);
+  void empty(blocs* tetrominos, int* max);
   void clean(blocs* tetrominos, int* max, int* height);
-  void display(SDL_Renderer* renderer, SDL_Texture* bloc, struct blocs* blocs, int* max);
+  void display(SDL_Renderer* renderer, struct blocs* blocs, int* max, SDL_Texture* blocBlack, SDL_Texture* blocRed, SDL_Texture* blocOrange, SDL_Texture* blocBlue, SDL_Texture* blocPink, SDL_Texture* blocGreen, SDL_Texture* blocCyan, SDL_Texture* blocPurple, SDL_Texture* blocYellow);
 };

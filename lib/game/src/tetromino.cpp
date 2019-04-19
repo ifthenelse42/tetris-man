@@ -41,22 +41,22 @@ void Game::Tetromino::speedUp(blocs* tetrominos, int* max, int* speed, int* scor
     case 400:
       up = true;
       break;
+    case 650:
+      up = true;
+      break;
     case 900:
       up = true;
       break;
-    case 1400:
+    case 1300:
       up = true;
       break;
-    case 2000:
+    case 1600:
       up = true;
       break;
-    case 3000:
+    case 1900:
       up = true;
       break;
-    case 4000:
-      up = true;
-      break;
-    case 5000:
+    case 2500:
       up = true;
       break;
   }
@@ -157,6 +157,10 @@ void Game::Tetromino::add(blocs* tetrominos, int startX, int startY, int type, i
   tetrominos[last].rotation = 0;
   tetrominos[last].velocity = *speed;
   tetrominos[last].zombie = false;
+
+  // On choisi une couleur au hasard entre 1 et 9 (chaque chiffre correspond à une couleur différente)
+  srand(time(NULL)); // Nécessaire pour la génération aléatoire
+  tetrominos[last].color = rand() % (8 + 1) + 1;
 
   // La matrice bi-dimentionnelle représentant le tetromino dépend de son type
   switch (type) {
@@ -774,6 +778,37 @@ bool Game::Tetromino::limit(blocs* tetrominos, int* max)
 }
 
 /**
+ * Fonction: Game::Tetromino::empty
+ * ------------------------
+ * Vide tous les tetrominos de la mémoire.
+ *
+ * @param tetrominos Pointeur vers un tableau contenant tout les tetrominos en mémoire
+ * @param max Pointeur vers le nombre maximum de tetromino en mémoire.
+ */
+void Game::Tetromino::empty(blocs* tetrominos, int* max) 
+{
+  Game::Tetromino tetromino;
+
+  for (int i = 0; i < *max; i++) {
+    tetrominos[i].startX = 0;
+    tetrominos[i].startY = 0;
+    tetrominos[i].type = 0;
+    tetrominos[i].velocity = 0;
+    tetrominos[i].zombie = 0;
+    tetrominos[i].color = 0;
+
+    // On vide aussi les coordonnées
+    for (int x = 0; x < tetromino.maxSize; x++) {
+      for (int y = 0; y < tetromino.maxSize; y++) {
+        tetrominos[i].coordinate[x][y] = 0;
+      }
+    }
+  }
+
+  *max = 0;
+}
+
+/**
  * Fonction: Game::Tetromino::clean
  * ------------------------
  * Détecte si un tetromino est maintenant en dehors de l'affichage, donc qu'il est temps de l'effacer de la mémoire.
@@ -797,14 +832,12 @@ void Game::Tetromino::clean(blocs* tetrominos, int* max, int* height)
       setMax++;
     }
     if (tetrominos[i].startY - 200 > render.height) {
-      std::cout << "cleaned tetromino " << i << std::endl;
       tetrominos[i].type = 0;
       tetrominos[i].rotation = 0;
       tetrominos[i].coordinate = { { 0, 0, 0, 0}, {0, 0, 0, 0} };
     }
   }
 
-  std::cout << setMax << std::endl;
   *max = setMax;
 }
 
@@ -820,7 +853,7 @@ void Game::Tetromino::clean(blocs* tetrominos, int* max, int* height)
  *
  * @see Game::Tetromino
  */
-void Game::Tetromino::display(SDL_Renderer* renderer, SDL_Texture* bloc, blocs* tetrominos, int* max)
+void Game::Tetromino::display(SDL_Renderer* renderer, blocs* tetrominos, int* max, SDL_Texture* blocBlack, SDL_Texture* blocRed, SDL_Texture* blocOrange, SDL_Texture* blocBlue, SDL_Texture* blocPink, SDL_Texture* blocGreen, SDL_Texture* blocCyan, SDL_Texture* blocPurple, SDL_Texture* blocYellow)
 {
   Tetromino tetromino;
   Engine::Texture texture;
@@ -833,7 +866,47 @@ void Game::Tetromino::display(SDL_Renderer* renderer, SDL_Texture* bloc, blocs* 
     for (int x = 0; x < tetromino.maxSize; x++) {
       for (int y = 0; y < tetromino.maxSize; y++) {
         if (tetrominos[k].coordinate[x][y] == 1)
-          texture.display(renderer, bloc, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+          /**
+           * On fait un switch pour afficher le bloc correspondant à la couleur du tetromino actuel.
+           * 1: orange
+           * 2: rouge
+           * 3: noir
+           * 4: rose
+           * 5: jaune
+           * 6: vert
+           * 7: bleu
+           * 8: cyan
+           * 9: violet
+           */
+          switch (tetrominos[k].color) {
+            case 1:
+              texture.display(renderer, blocOrange, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 2:
+              texture.display(renderer, blocRed, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 3:
+              texture.display(renderer, blocBlack, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 4:
+              texture.display(renderer, blocPink, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 5:
+              texture.display(renderer, blocYellow, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 6:
+              texture.display(renderer, blocGreen, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 7:
+              texture.display(renderer, blocBlue, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 8:
+              texture.display(renderer, blocCyan, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+            case 9:
+              texture.display(renderer, blocPurple, tetrominos[k].startX + (tetromino.blocWidth * x), tetrominos[k].startY + (tetromino.blocHeight * y), tetromino.blocWidth, tetromino.blocHeight);
+            break;
+          }
       }
     }
   }
